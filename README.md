@@ -89,7 +89,7 @@ try {
 ```typescript
 {
     checkedFramesCount: 5890247,
-    results: [] // Array of `SearchResult`
+    results: [] // Array of `SearchResult` objects
 }
 ```
 
