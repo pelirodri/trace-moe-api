@@ -138,5 +138,6 @@ try {
 
 ## Links
 
+- [trace.moe API](https://soruly.github.io/trace.moe-api)
 - [trace.moe repository](https://github.com/soruly/trace.moe)
-- [trace.moe API](https://soruly.github.io/trace.moe-api/#/)
+- [trace.moe’s creator’s Patreon profile](https://www.patreon.com/soruly)

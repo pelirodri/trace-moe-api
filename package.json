@@ -1,6 +1,6 @@
 {
 	"name": "trace-moe-api",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "API wrapper for trace.moe",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
