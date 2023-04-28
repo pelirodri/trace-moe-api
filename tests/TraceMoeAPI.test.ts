@@ -30,180 +30,182 @@ describe("TraceMoeAPI", () => {
 		axiosMockAdapter.reset();
 	});
 
-	describe("Fetch anime with media URL", () => {
-		const mediaURL = "https://images.plurk.com/32B15UXxymfSMwKGTObY5e.jpg";
+	describe("Search for anime scene", () => {
+		describe("Search for anime scene with media URL", () => {
+			const mediaURL = "https://images.plurk.com/32B15UXxymfSMwKGTObY5e.jpg";
 
-		let searchGetMatcher: RegExp;
+			let searchGetMatcher: RegExp;
 
-		beforeAll(() => {
-			searchGetMatcher = new RegExp(`${searchEndpoint}\\?.+`);
-		});
+			beforeAll(() => {
+				searchGetMatcher = new RegExp(`${searchEndpoint}\\?.+`);
+			});
 
-		test("Pass media URL in query parameters", async () => {
-			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-			await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
+			test("Pass media URL in query parameters", async () => {
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
+				await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`url=${mediaURL}`);
-		});
+				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`url=${mediaURL}`);
+			});
 
-		test("Filter by AniList ID", async () => {
-			const rawSearchResponseMock = buildRawSearchResponseMock();
-			const anilistID = rawSearchResponseMock.result![0].anilist as number;
+			test("Filter by AniList ID", async () => {
+				const rawSearchResponseMock = buildRawSearchResponseMock();
+				const anilistID = rawSearchResponseMock.result![0].anilist as number;
 
-			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, rawSearchResponseMock);
-			await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL, { anilistID });
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, rawSearchResponseMock);
+				await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL, { anilistID });
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`anilistID=${anilistID}`);
-		});
+				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`anilistID=${anilistID}`);
+			});
 
-		test("Cut black borders", async () => {
-			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-			await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL, { shouldCutBlackBorders: true });
+			test("Cut black borders", async () => {
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
+				await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL, { shouldCutBlackBorders: true });
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("cutBorders");
-		});
+				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("cutBorders");
+			});
 
-		test("Don't include extra AniList info", async () => {
-			const searchResponseMock = buildSearchResponseMock();
+			test("Don't include extra AniList info", async () => {
+				const searchResponseMock = buildSearchResponseMock();
 
-			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-			const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
-
-			expect(response).toEqual(searchResponseMock);
-		});
-
-		test("Include extra AniList info", async () => {
-			const searchResponseMock = buildSearchResponseMock(true);
-
-			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock(true));
-
-			const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(
-				mediaURL,
-				{ shouldIncludeExtraAnilistInfo: true }
-			);
-
-			expect(response).toEqual(searchResponseMock);
-		});
-
-		test("Pass API key in header", async () => {
-			traceMoeAPI.apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
-
-			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-			const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
-
-			const headers = axiosMockAdapter.history.get[0].headers;
-			expect(headers).toMatchObject({ "x-trace-key": traceMoeAPI.apiKey });
-
-			traceMoeAPI.apiKey = undefined;
-		});
-
-		test("API error", async () => {
-			const errorMessage = "Concurrency limit exceeded";
-			const expectedError = new APIError(errorMessage, 402);
-
-			expect.assertions(1);
-
-			try {
-				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(402, { error: errorMessage });
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
 				const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
-			} catch (error) {
-				expect(error).toEqual(expectedError);
-			}
-		});
-	});
 
-	describe("Fetch anime with media path", () => {
-		const mediaPath = "test.jpg";
+				expect(response).toEqual(searchResponseMock);
+			});
 
-		let searchPostMatcher: RegExp;
+			test("Include extra AniList info", async () => {
+				const searchResponseMock = buildSearchResponseMock(true);
 
-		beforeAll(() => {
-			searchPostMatcher = new RegExp(`${searchEndpoint}(?:\\?.+)?`);
-			mockFS({ [mediaPath]: Buffer.from([8, 6, 7, 5, 3, 0, 9]) });
-		});
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock(true));
 
-		afterAll(() => {
-			mockFS.restore();
-		});
+				const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(
+					mediaURL,
+					{ shouldIncludeExtraAnilistInfo: true }
+				);
 
-		test("Pass image data in body", async () => {
-			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-			await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+				expect(response).toEqual(searchResponseMock);
+			});
 
-			expect(axiosMockAdapter.history.post[0].data).toEqual(fs.readFileSync(mediaPath));
-		});
+			test("Pass API key in header", async () => {
+				traceMoeAPI.apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
 
-		test("Filter by AniList ID", async () => {
-			const rawSearchResponseMock = buildRawSearchResponseMock();
-			const anilistID = rawSearchResponseMock.result![0].anilist as number;
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
+				const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
 
-			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, rawSearchResponseMock);
-			await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath, { anilistID });
+				const headers = axiosMockAdapter.history.get[0].headers;
+				expect(headers).toMatchObject({ "x-trace-key": traceMoeAPI.apiKey });
 
-			expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain(`anilistID=${anilistID}`);
-		});
+				traceMoeAPI.apiKey = undefined;
+			});
 
-		test("Cut black borders", async () => {
-			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-			await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath, { shouldCutBlackBorders: true });
+			test("API error", async () => {
+				const errorMessage = "Concurrency limit exceeded";
+				const expectedError = new APIError(errorMessage, 402);
 
-			expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain("cutBorders");
-		});
+				expect.assertions(1);
 
-		test("Don't include extra AniList info", async () => {
-			const searchResponseMock = buildSearchResponseMock();
-
-			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-			const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath)
-
-			expect(response).toEqual(searchResponseMock);
+				try {
+					axiosMockAdapter.onGet(searchGetMatcher).replyOnce(402, { error: errorMessage });
+					const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
+				} catch (error) {
+					expect(error).toEqual(expectedError);
+				}
+			});
 		});
 
-		test("Include extra AniList info", async () => {
-			const searchResponseMock = buildSearchResponseMock(true);
+		describe("Search for anime scene with media path", () => {
+			const mediaPath = "test.jpg";
 
-			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock(true));
+			let searchPostMatcher: RegExp;
 
-			const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(
-				mediaPath,
-				{ shouldIncludeExtraAnilistInfo: true }
-			);
+			beforeAll(() => {
+				searchPostMatcher = new RegExp(`${searchEndpoint}(?:\\?.+)?`);
+				mockFS({ [mediaPath]: Buffer.from([8, 6, 7, 5, 3, 0, 9]) });
+			});
 
-			expect(response).toEqual(searchResponseMock);
-		});
+			afterAll(() => {
+				mockFS.restore();
+			});
 
-		test("Pass correct content type", async () => {
-			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-			await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+			test("Pass image data in body", async () => {
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
+				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
-			const headers = axiosMockAdapter.history.post[0].headers;
-			expect(headers).toMatchObject({ "Content-Type": "application/x-www-form-urlencoded" });
-		});
+				expect(axiosMockAdapter.history.post[0].data).toEqual(fs.readFileSync(mediaPath));
+			});
 
-		test("Pass API key in header", async () => {
-			traceMoeAPI.apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
+			test("Filter by AniList ID", async () => {
+				const rawSearchResponseMock = buildRawSearchResponseMock();
+				const anilistID = rawSearchResponseMock.result![0].anilist as number;
 
-			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-			await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, rawSearchResponseMock);
+				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath, { anilistID });
 
-			const headers = axiosMockAdapter.history.post[0].headers;
-			expect(headers).toMatchObject({ "x-trace-key": traceMoeAPI.apiKey });
+				expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain(`anilistID=${anilistID}`);
+			});
 
-			traceMoeAPI.apiKey = undefined;
-		});
+			test("Cut black borders", async () => {
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
+				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath, { shouldCutBlackBorders: true });
 
-		test("API error", async () => {
-			const errorMessage = "Concurrency limit exceeded";
-			const expectedError = new APIError(errorMessage, 402);
+				expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain("cutBorders");
+			});
 
-			expect.assertions(1);
+			test("Don't include extra AniList info", async () => {
+				const searchResponseMock = buildSearchResponseMock();
 
-			try {
-				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(402, { error: errorMessage });
-				const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
-			} catch (error) {
-				expect(error).toEqual(expectedError);
-			}
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
+				const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath)
+
+				expect(response).toEqual(searchResponseMock);
+			});
+
+			test("Include extra AniList info", async () => {
+				const searchResponseMock = buildSearchResponseMock(true);
+
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock(true));
+
+				const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(
+					mediaPath,
+					{ shouldIncludeExtraAnilistInfo: true }
+				);
+
+				expect(response).toEqual(searchResponseMock);
+			});
+
+			test("Pass correct content type", async () => {
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
+				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+
+				const headers = axiosMockAdapter.history.post[0].headers;
+				expect(headers).toMatchObject({ "Content-Type": "application/x-www-form-urlencoded" });
+			});
+
+			test("Pass API key in header", async () => {
+				traceMoeAPI.apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
+
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
+				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+
+				const headers = axiosMockAdapter.history.post[0].headers;
+				expect(headers).toMatchObject({ "x-trace-key": traceMoeAPI.apiKey });
+
+				traceMoeAPI.apiKey = undefined;
+			});
+
+			test("API error", async () => {
+				const errorMessage = "Concurrency limit exceeded";
+				const expectedError = new APIError(errorMessage, 402);
+
+				expect.assertions(1);
+
+				try {
+					axiosMockAdapter.onPost(searchPostMatcher).replyOnce(402, { error: errorMessage });
+					const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+				} catch (error) {
+					expect(error).toEqual(expectedError);
+				}
+			});
 		});
 	});
 
