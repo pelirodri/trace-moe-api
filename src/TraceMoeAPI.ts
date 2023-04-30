@@ -181,7 +181,7 @@ export default class TraceMoeAPI {
 			await fsPromises.mkdir(destinationDirectory, { recursive: true });
 		}
 
-		destinationName = this.buildFileNameFromResult(result, isVideo, destinationName);
+		destinationName = this.buildFilenameFromResult(result, isVideo, destinationName);
 
 		const destinationPath = path.join(destinationDirectory, destinationName);
 		const mediaBuffer = Buffer.from((await axios.get(mediaURL, { responseType: "arraybuffer" })).data);
@@ -191,14 +191,23 @@ export default class TraceMoeAPI {
 		return destinationPath;
 	}
 
-	private buildFileNameFromResult(result: SearchResult, isVideo: boolean, filename: string | undefined): string {
-		const extension = `.${isVideo ? "mp4" : "jpg"}`;
+	private buildFilenameFromResult(result: SearchResult, isVideo: boolean, filename: string | undefined): string {
+		const supportedVideoExtensions = [".mp4", ".m4a"];
+		const supportedImageExtensions = [".jpg", ".jpeg"];
 
 		if (!filename) {
 			const baseName = result.filename.substring(0, result.filename.lastIndexOf("."));
+			const extension = isVideo ? supportedVideoExtensions[0] : supportedImageExtensions[0];
+
 			filename = `${baseName}@${(new URL(result.imageURL).searchParams.get("t"))}${extension}`;
-		} else if (filename.substring(filename.lastIndexOf(".")) !== extension) {
-			filename += extension;
+		} else {
+			const filenameExtension = filename.substring(filename.lastIndexOf(".")).toLowerCase();
+
+			if (isVideo && !supportedVideoExtensions.includes(filenameExtension)) {
+				filename += supportedVideoExtensions[0];
+			} else if (!isVideo && !supportedImageExtensions.includes(filenameExtension)) {
+				filename += supportedImageExtensions[0];
+			}
 		}
 
 		return filename;
