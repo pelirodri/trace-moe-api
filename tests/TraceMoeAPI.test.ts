@@ -270,7 +270,7 @@ describe("TraceMoeAPI", () => {
 				expect(fs.readFileSync(destinationPath)).toEqual(videoBuffer);
 				expect(axiosMockAdapter.history.get[0].url).toEqual(`${resultMock.videoURL}&size=${mediaSize}`);
 			});
-	
+
 			test("Request muted", async () => {
 				const resultMock = buildSearchResponseMock().results[0];
 	
@@ -278,6 +278,63 @@ describe("TraceMoeAPI", () => {
 				const response = await traceMoeAPI.downloadVideoFromResult(resultMock, { shouldMute: true });
 	
 				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("mute");
+			});
+
+			test("Pass a destination name with the '.MP4' extension", async () => {
+				const extension = ".MP4";
+				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+	
+				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+	
+				const response = await traceMoeAPI.downloadVideoFromResult(
+					buildSearchResponseMock().results[0],
+					{
+						size: MediaSize.medium,
+						shouldMute: false,
+						directory: destinationDirectory,
+						name: destinationName + extension
+					}
+				);
+	
+				expect(response).toBe(destinationPath);
+			});
+
+			test("Pass a destination name with the '.m4a' extension", async () => {
+				const extension = ".m4a";
+				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+	
+				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+	
+				const response = await traceMoeAPI.downloadVideoFromResult(
+					buildSearchResponseMock().results[0],
+					{
+						size: MediaSize.medium,
+						shouldMute: false,
+						directory: destinationDirectory,
+						name: destinationName + extension
+					}
+				);
+	
+				expect(response).toBe(destinationPath);
+			});
+
+			test("Pass a destination name with the '.M4A' extension", async () => {
+				const extension = ".M4A";
+				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+	
+				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+	
+				const response = await traceMoeAPI.downloadVideoFromResult(
+					buildSearchResponseMock().results[0],
+					{
+						size: MediaSize.medium,
+						shouldMute: false,
+						directory: destinationDirectory,
+						name: destinationName + extension
+					}
+				);
+	
+				expect(response).toBe(destinationPath);
 			});
 		});
 
@@ -299,6 +356,48 @@ describe("TraceMoeAPI", () => {
 				expect(fs.existsSync(destinationPath)).toBeTruthy();
 				expect(fs.readFileSync(destinationPath)).toEqual(imageBuffer);
 				expect(axiosMockAdapter.history.get[0].url).toEqual(`${resultMock.imageURL}&size=${mediaSize}`);
+			});
+
+			test("Pass a destination name with the '.JPG' extension", async () => {
+				const extension = ".JPG";
+				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+	
+				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+	
+				const response = await traceMoeAPI.downloadImageFromResult(
+					buildSearchResponseMock().results[0],
+					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
+				);
+	
+				expect(response).toBe(destinationPath);
+			});
+
+			test("Pass a destination name with the '.jpeg' extension", async () => {
+				const extension = ".jpeg";
+				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+	
+				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+	
+				const response = await traceMoeAPI.downloadImageFromResult(
+					buildSearchResponseMock().results[0],
+					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
+				);
+	
+				expect(response).toBe(destinationPath);
+			});
+
+			test("Pass a destination name with the '.JPEG' extension", async () => {
+				const extension = ".JPEG";
+				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+	
+				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+	
+				const response = await traceMoeAPI.downloadImageFromResult(
+					buildSearchResponseMock().results[0],
+					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
+				);
+	
+				expect(response).toBe(destinationPath);
 			});
 		});
 	});
