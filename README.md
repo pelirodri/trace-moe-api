@@ -84,7 +84,9 @@ try {
 }
 ```
 
-## Sample `SearchResponse` object
+## Sample responses
+
+### `SearchResponse` object
 
 ```typescript
 {
@@ -93,7 +95,7 @@ try {
 }
 ```
 
-## Sample `SearchResult` object without `shouldIncludeExtraAnilistInfo`
+### `SearchResult` object without `shouldIncludeExtraAnilistInfo`
 
 ```typescript
 {
@@ -108,7 +110,7 @@ try {
 }
 ```
 
-## Sample `AnilistInfo` object with `shouldIncludeExtraAnilistInfo`
+### `AnilistInfo` object with `shouldIncludeExtraAnilistInfo`
 
 ```typescript
 {
@@ -124,7 +126,7 @@ try {
 }
 ```
 
-## Sample `APILimitsResponse` object
+### `APILimitsResponse` object
 
 ```typescript
 {
