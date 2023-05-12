@@ -93,7 +93,7 @@ describe("TraceMoeAPI", () => {
 				const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
 
 				const headers = axiosMockAdapter.history.get[0].headers;
-				expect(headers).toMatchObject({ "x-trace-key": traceMoeAPI.apiKey });
+				expect(headers).toMatchObject({ "X-Trace-Key": traceMoeAPI.apiKey });
 
 				traceMoeAPI.apiKey = undefined;
 			});
@@ -188,7 +188,7 @@ describe("TraceMoeAPI", () => {
 				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
 				const headers = axiosMockAdapter.history.post[0].headers;
-				expect(headers).toMatchObject({ "x-trace-key": traceMoeAPI.apiKey });
+				expect(headers).toMatchObject({ "X-Trace-Key": traceMoeAPI.apiKey });
 
 				traceMoeAPI.apiKey = undefined;
 			});

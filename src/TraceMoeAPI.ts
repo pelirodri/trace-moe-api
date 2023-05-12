@@ -216,7 +216,7 @@ export default class TraceMoeAPI {
 	private setUpInterceptors(): void {
 		this.traceMoeRequest.interceptors.request.use(request => {
 			if (this.apiKey) {
-				request.headers["x-trace-key"] = this.apiKey;
+				request.headers["X-Trace-Key"] = this.apiKey;
 			}
 
 			return request;
