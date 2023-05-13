@@ -1,3 +1,43 @@
+/** API wrapper for trace.moe. */
+export interface TraceMoeAPIWrapper {
+	/** Optional API key you can get from https://www.patreon.com/soruly. */
+	readonly apiKey: string | null;
+
+	/**
+	 * Fetches info about the detected anime scene from a URL.
+	 * @param mediaURL - URL of a media file containing the anime scene.
+	 * @param options - Search options.
+	 * @returns Search response.
+	 */
+	searchForAnimeSceneWithMediaURL: (mediaURL: string | URL, options?: SearchOptions) => Promise<SearchResponse>;
+
+	/**
+	 * Fetches info about the detected anime scene from a local file path.
+	 * @param mediaPath - Path to a local media file containing the anime scene.
+	 * @param options - Search options.
+	 * @returns Search response.
+	 */
+	searchForAnimeSceneWithMediaAtPath: (mediaPath: string, options?: SearchOptions) => Promise<SearchResponse>;
+
+	fetchAPILimits: () => Promise<APILimitsResponse>;
+
+	/**
+	 * Saves video preview of the found scene in a result.
+	 * @param result - Result obtained from a call to one of the search methods.
+	 * @param options - Media download options.
+	 * @returns Path to saved file.
+	 */
+	downloadVideoFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;
+
+	/**
+	 * Saves image preview of the found scene in a result.
+	 * @param result - Result obtained from a call to one of the search methods.
+	 * @param options - Media download options.
+	 * @returns Path to saved file.
+	 */
+	downloadImageFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;	
+}
+
 /** Options for searching anime scenes. */
 export interface SearchOptions {
     /** Whether the API should attempt to remove black borders before searching for a matching scene. */

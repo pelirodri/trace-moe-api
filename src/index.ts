@@ -1,7 +1,8 @@
-export { default } from "./TraceMoeAPI";
+export { createTraceMoeAPIWrapper } from "./trace-moe-api-wrapper";
 
 export {
 	MediaSize,
+	type TraceMoeAPIWrapper,
 	type APIError,
 	type SearchOptions,
 	type SearchResponse,

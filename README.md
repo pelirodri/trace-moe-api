@@ -16,7 +16,7 @@ Using npm:
 $ npm i trace-moe-api
 ```
 
-## Available methods
+## TraceMoeAPIWrapper
 
 ```typescript
 searchForAnimeSceneWithMediaURL(mediaURL: string | URL, options?: SearchOptions): Promise<SearchResponse>;
@@ -52,10 +52,10 @@ interface MediaDownloadOptions {
 ## Example
 
 ```typescript
-import TraceMoeAPI, { MediaSize, APIError as TraceMoeAPIError } from "trace-moe-api";
+import { createTraceMoeAPIWrapper, MediaSize, APIError as TraceMoeAPIError } from "trace-moe-api";
 
-const traceMoeAPI = new TraceMoeAPI();
-// const traceMoeAPI = new TraceMoeAPI(apiKey);
+const traceMoeAPIWrapper = createTraceMoeAPIWrapper();
+// const traceMoeAPIWrapper = createTraceMoeAPIWrapper(apiKey);
 
 try {
     const apiLimits = await traceMoeAPI.fetchAPILimits();
@@ -63,16 +63,16 @@ try {
     if (apiLimits.remainingQuota > 0) {
         const mediaURL = "https://images.plurk.com/32B15UXxymfSMwKGTObY5e.jpg";
 	
-        const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
-        // const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+        const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
+        // const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
         if (response.results.length > 0) {
             const result = response.results[0];
 
             console.log(result.anilistInfo.id);
 
-            const downloadPath = await traceMoeAPI.downloadVideoFromResult(result, MediaSize.large);
-            // const downloadPath = await traceMoeAPI.downloadImageFromResult(result, MediaSize.large);
+            const downloadPath = await traceMoeAPIWrapper.downloadVideoFromResult(result, MediaSize.large);
+            // const downloadPath = await traceMoeAPIWrapper.downloadImageFromResult(result, MediaSize.large);
 
             // Do something with `downloadPath`...		
         }

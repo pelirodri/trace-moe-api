@@ -1,4 +1,4 @@
-import TraceMoeAPI, { type SearchResponse, type AnilistInfo, type APILimitsResponse } from "../../src";
+import { type SearchResponse, type AnilistInfo, type APILimitsResponse } from "../../src";
 import type { RawSearchResponse, RawAnilistInfo, RawAPILimitsResponse } from "../../src/types/raw-types";
 
 const baseMediaURL = "https://media.trace.moe";
@@ -81,7 +81,7 @@ export function buildSearchResponseMock(shouldIncludeAnilistInfo = false): Searc
 	};
 }
 
-export function buildRawAPILimitsResponseMock(apiKey?: string): RawAPILimitsResponse {
+export function buildRawAPILimitsResponseMock(apiKey: string | null = null): RawAPILimitsResponse {
 	return {
 		id: apiKey ?? "127.0.0.1",
 		priority: 0,
@@ -91,7 +91,7 @@ export function buildRawAPILimitsResponseMock(apiKey?: string): RawAPILimitsResp
 	}
 }
 
-export function buildAPILimitsResponseMock(apiKey?: string): APILimitsResponse {
+export function buildAPILimitsResponseMock(apiKey: string | null = null): APILimitsResponse {
 	return {
 		id: apiKey ?? "127.0.0.1",
 		priority: 0,

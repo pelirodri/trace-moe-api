@@ -1,5 +1,5 @@
-import TraceMoeAPI, { baseURL } from "../src/TraceMoeAPI";
-import { Endpoint, APIError, MediaSize } from "../src/types/types";
+import { createTraceMoeAPIWrapper, baseURL, } from "../src/trace-moe-api-wrapper";
+import { Endpoint, APIError, MediaSize, type TraceMoeAPIWrapper } from "../src/types/types";
 
 import {
 	buildRawSearchResponseMock,
@@ -20,10 +20,14 @@ describe("TraceMoeAPI", () => {
 	const searchEndpoint = baseURL + Endpoint.search;
 	const meEndpoint = baseURL + Endpoint.me;
 
-	let traceMoeAPI: TraceMoeAPI;
+	const apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
+
+	let traceMoeAPIWrapper: TraceMoeAPIWrapper;
+	let traceMoeAPIWrapperWithKey: TraceMoeAPIWrapper;
 
 	beforeAll(() => {
-		traceMoeAPI = new TraceMoeAPI();
+		traceMoeAPIWrapper = createTraceMoeAPIWrapper();
+		traceMoeAPIWrapperWithKey = createTraceMoeAPIWrapper(apiKey);
 	});
 
 	afterEach(() => {
@@ -42,7 +46,7 @@ describe("TraceMoeAPI", () => {
 
 			test("Pass media URL in query parameters", async () => {
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-				await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
+				await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
 
 				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`url=${mediaURL}`);
 			});
@@ -52,14 +56,14 @@ describe("TraceMoeAPI", () => {
 				const anilistID = rawSearchResponseMock.result![0].anilist as number;
 
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, rawSearchResponseMock);
-				await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL, { anilistID });
+				await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL, { anilistID });
 
 				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`anilistID=${anilistID}`);
 			});
 
 			test("Cut black borders", async () => {
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-				await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL, { shouldCutBlackBorders: true });
+				await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL, { shouldCutBlackBorders: true });
 
 				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("cutBorders");
 			});
@@ -68,7 +72,7 @@ describe("TraceMoeAPI", () => {
 				const searchResponseMock = buildSearchResponseMock();
 
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-				const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
+				const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
 
 				expect(response).toEqual(searchResponseMock);
 			});
@@ -78,7 +82,7 @@ describe("TraceMoeAPI", () => {
 
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock(true));
 
-				const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(
+				const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(
 					mediaURL,
 					{ shouldIncludeExtraAnilistInfo: true }
 				);
@@ -87,15 +91,11 @@ describe("TraceMoeAPI", () => {
 			});
 
 			test("Pass API key in header", async () => {
-				traceMoeAPI.apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
-
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-				const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
+				const response = await traceMoeAPIWrapperWithKey.searchForAnimeSceneWithMediaURL(mediaURL);
 
 				const headers = axiosMockAdapter.history.get[0].headers;
-				expect(headers).toMatchObject({ "X-Trace-Key": traceMoeAPI.apiKey });
-
-				traceMoeAPI.apiKey = undefined;
+				expect(headers).toMatchObject({ "X-Trace-Key": apiKey });
 			});
 
 			test("API error", async () => {
@@ -106,7 +106,7 @@ describe("TraceMoeAPI", () => {
 
 				try {
 					axiosMockAdapter.onGet(searchGetMatcher).replyOnce(402, { error: errorMessage });
-					const response = await traceMoeAPI.searchForAnimeSceneWithMediaURL(mediaURL);
+					const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
 				} catch (error) {
 					expect(error).toEqual(expectedError);
 				}
@@ -129,7 +129,7 @@ describe("TraceMoeAPI", () => {
 
 			test("Pass image data in body", async () => {
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+				await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
 				expect(axiosMockAdapter.history.post[0].data).toEqual(fs.readFileSync(mediaPath));
 			});
@@ -139,14 +139,14 @@ describe("TraceMoeAPI", () => {
 				const anilistID = rawSearchResponseMock.result![0].anilist as number;
 
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, rawSearchResponseMock);
-				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath, { anilistID });
+				await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath, { anilistID });
 
 				expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain(`anilistID=${anilistID}`);
 			});
 
 			test("Cut black borders", async () => {
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath, { shouldCutBlackBorders: true });
+				await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath, { shouldCutBlackBorders: true });
 
 				expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain("cutBorders");
 			});
@@ -155,7 +155,7 @@ describe("TraceMoeAPI", () => {
 				const searchResponseMock = buildSearchResponseMock();
 
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-				const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath)
+				const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath)
 
 				expect(response).toEqual(searchResponseMock);
 			});
@@ -165,7 +165,7 @@ describe("TraceMoeAPI", () => {
 
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock(true));
 
-				const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(
+				const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(
 					mediaPath,
 					{ shouldIncludeExtraAnilistInfo: true }
 				);
@@ -175,22 +175,18 @@ describe("TraceMoeAPI", () => {
 
 			test("Pass correct content type", async () => {
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+				await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
 				const headers = axiosMockAdapter.history.post[0].headers;
 				expect(headers).toMatchObject({ "Content-Type": "application/x-www-form-urlencoded" });
 			});
 
 			test("Pass API key in header", async () => {
-				traceMoeAPI.apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
-
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
-				await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+				await traceMoeAPIWrapperWithKey.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
 				const headers = axiosMockAdapter.history.post[0].headers;
-				expect(headers).toMatchObject({ "X-Trace-Key": traceMoeAPI.apiKey });
-
-				traceMoeAPI.apiKey = undefined;
+				expect(headers).toMatchObject({ "X-Trace-Key": apiKey });
 			});
 
 			test("API error", async () => {
@@ -201,7 +197,7 @@ describe("TraceMoeAPI", () => {
 
 				try {
 					axiosMockAdapter.onPost(searchPostMatcher).replyOnce(402, { error: errorMessage });
-					const response = await traceMoeAPI.searchForAnimeSceneWithMediaAtPath(mediaPath);
+					const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
 				} catch (error) {
 					expect(error).toEqual(expectedError);
 				}
@@ -214,18 +210,16 @@ describe("TraceMoeAPI", () => {
 			const apiLimitsResponseMock = buildAPILimitsResponseMock();
 
 			axiosMockAdapter.onGet(meEndpoint).replyOnce(200, buildRawAPILimitsResponseMock());
-			const response = await traceMoeAPI.fetchAPILimits();
+			const response = await traceMoeAPIWrapper.fetchAPILimits();
 
 			expect(response).toEqual(apiLimitsResponseMock);
 		});
 
 		test("With API key", async () => {
-			traceMoeAPI.apiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
+			const apiLimitsResponseMock = buildAPILimitsResponseMock(traceMoeAPIWrapper.apiKey);
 
-			const apiLimitsResponseMock = buildAPILimitsResponseMock(traceMoeAPI.apiKey);
-
-			axiosMockAdapter.onGet(meEndpoint).replyOnce(200, buildRawAPILimitsResponseMock(traceMoeAPI.apiKey));
-			const response = await traceMoeAPI.fetchAPILimits();
+			axiosMockAdapter.onGet(meEndpoint).replyOnce(200, buildRawAPILimitsResponseMock(traceMoeAPIWrapper.apiKey));
+			const response = await traceMoeAPIWrapperWithKey.fetchAPILimits();
 
 			expect(response).toEqual(apiLimitsResponseMock);
 		});
@@ -260,7 +254,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, videoBuffer);
 	
-				const response = await traceMoeAPI.downloadVideoFromResult(
+				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
 					resultMock,
 					{ size: mediaSize, shouldMute: false, directory: destinationDirectory, name: destinationName }
 				);
@@ -275,7 +269,7 @@ describe("TraceMoeAPI", () => {
 				const resultMock = buildSearchResponseMock().results[0];
 	
 				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-				const response = await traceMoeAPI.downloadVideoFromResult(resultMock, { shouldMute: true });
+				const response = await traceMoeAPIWrapper.downloadVideoFromResult(resultMock, { shouldMute: true });
 	
 				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("mute");
 			});
@@ -286,7 +280,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
 	
-				const response = await traceMoeAPI.downloadVideoFromResult(
+				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
 					buildSearchResponseMock().results[0],
 					{
 						size: MediaSize.medium,
@@ -305,7 +299,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
 	
-				const response = await traceMoeAPI.downloadVideoFromResult(
+				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
 					buildSearchResponseMock().results[0],
 					{
 						size: MediaSize.medium,
@@ -324,7 +318,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
 	
-				const response = await traceMoeAPI.downloadVideoFromResult(
+				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
 					buildSearchResponseMock().results[0],
 					{
 						size: MediaSize.medium,
@@ -347,7 +341,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, imageBuffer);
 	
-				const response = await traceMoeAPI.downloadImageFromResult(
+				const response = await traceMoeAPIWrapper.downloadImageFromResult(
 					resultMock,
 					{ size: mediaSize, directory: destinationDirectory, name: destinationName },
 				);
@@ -364,7 +358,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
 	
-				const response = await traceMoeAPI.downloadImageFromResult(
+				const response = await traceMoeAPIWrapper.downloadImageFromResult(
 					buildSearchResponseMock().results[0],
 					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
 				);
@@ -378,7 +372,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
 	
-				const response = await traceMoeAPI.downloadImageFromResult(
+				const response = await traceMoeAPIWrapper.downloadImageFromResult(
 					buildSearchResponseMock().results[0],
 					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
 				);
@@ -392,7 +386,7 @@ describe("TraceMoeAPI", () => {
 	
 				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
 	
-				const response = await traceMoeAPI.downloadImageFromResult(
+				const response = await traceMoeAPIWrapper.downloadImageFromResult(
 					buildSearchResponseMock().results[0],
 					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
 				);
