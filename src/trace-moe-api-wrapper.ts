@@ -49,7 +49,7 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoe
 		const endpoint = searchEndpoint + buildQueryStringFromSearchOptions({ ...options }, mediaURL);
 		const rawResponse: RawSearchResponse = (await traceMoeAPI!.get(endpoint)).data;
 	
-		return buildSearchResponseFromRawResponse(rawResponse);
+		return Object.freeze(buildSearchResponseFromRawResponse(rawResponse));
 	}
 	
 	async function searchForAnimeSceneWithMediaAtPath(
@@ -60,19 +60,19 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoe
 		const mediaBuffer = await fsPromises.readFile(mediaPath);
 		const rawResponse: RawSearchResponse = (await traceMoeAPI!.post(endpoint, mediaBuffer)).data;
 	
-		return buildSearchResponseFromRawResponse(rawResponse);
+		return Object.freeze(buildSearchResponseFromRawResponse(rawResponse));
 	}
 	
 	async function fetchAPILimits(): Promise<APILimitsResponse> {
 		const rawResponse: RawAPILimitsResponse = (await traceMoeAPI!.get(meEndpoint)).data;
 	
-		return {
+		return Object.freeze({
 			id: rawResponse.id,
 			priority: rawResponse.priority,
 			concurrency: rawResponse.concurrency,
 			totalQuota: rawResponse.quota,
 			remainingQuota: rawResponse.quota - rawResponse.quotaUsed
-		};
+		});
 	}
 	
 	async function downloadVideoFromResult(result: SearchResult, options?: MediaDownloadOptions): Promise<string> {
