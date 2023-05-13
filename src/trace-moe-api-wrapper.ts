@@ -143,7 +143,7 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null, shouldRet
 	function setUpAPIInterceptors(apiKey: string | null = null): void {
 		traceMoeAPI!.interceptors.request.use(request => {
 			if (apiKey) {
-				request.headers["X-Trace-Key"] = apiKey;
+				request.headers["x-trace-key"] = apiKey;
 			}
 	
 			return request;
