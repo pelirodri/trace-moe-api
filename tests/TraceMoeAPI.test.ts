@@ -24,10 +24,12 @@ describe("TraceMoeAPI", () => {
 
 	let traceMoeAPIWrapper: TraceMoeAPIWrapper;
 	let traceMoeAPIWrapperWithKey: TraceMoeAPIWrapper;
+	let traceMoeAPIWrapperWithRetry: TraceMoeAPIWrapper;
 
 	beforeAll(() => {
 		traceMoeAPIWrapper = createTraceMoeAPIWrapper();
 		traceMoeAPIWrapperWithKey = createTraceMoeAPIWrapper(apiKey);
+		traceMoeAPIWrapperWithRetry = createTraceMoeAPIWrapper(null, true);
 	});
 
 	afterEach(() => {
@@ -92,7 +94,7 @@ describe("TraceMoeAPI", () => {
 
 			test("Pass API key in header", async () => {
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
-				const response = await traceMoeAPIWrapperWithKey.searchForAnimeSceneWithMediaURL(mediaURL);
+				await traceMoeAPIWrapperWithKey.searchForAnimeSceneWithMediaURL(mediaURL);
 
 				const headers = axiosMockAdapter.history.get[0].headers;
 				expect(headers).toMatchObject({ "X-Trace-Key": apiKey });
@@ -102,14 +104,29 @@ describe("TraceMoeAPI", () => {
 				const errorMessage = "Concurrency limit exceeded";
 				const expectedError = new SearchError(errorMessage, 402);
 
-				expect.assertions(1);
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(402, { error: errorMessage });
+				const promise = traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
 
-				try {
-					axiosMockAdapter.onGet(searchGetMatcher).replyOnce(402, { error: errorMessage });
-					const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
-				} catch (error) {
-					expect(error).toEqual(expectedError);
-				}
+				await expect(promise).rejects.toThrow(expectedError);
+			});
+
+			test("Rate limit without retry", async () => {
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(429);
+				const promise = traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
+
+				await expect(promise).rejects.toThrow();
+			});
+
+			test("Rate limit with retry", async () => {
+				const searchResponseMock = buildSearchResponseMock();
+				const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 1 };
+
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(429, undefined, xRateLimitResetHeader);
+				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseMock());
+
+				const response = await traceMoeAPIWrapperWithRetry.searchForAnimeSceneWithMediaURL(mediaURL);
+
+				expect(response).toEqual(searchResponseMock);
 			});
 		});
 
@@ -151,7 +168,7 @@ describe("TraceMoeAPI", () => {
 				expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain("cutBorders");
 			});
 
-			test("Don't include extra AniList info", async () => {
+			test("Without extra AniList info", async () => {
 				const searchResponseMock = buildSearchResponseMock();
 
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
@@ -160,7 +177,7 @@ describe("TraceMoeAPI", () => {
 				expect(response).toEqual(searchResponseMock);
 			});
 
-			test("Include extra AniList info", async () => {
+			test("With extra AniList info", async () => {
 				const searchResponseMock = buildSearchResponseMock(true);
 
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock(true));
@@ -193,14 +210,29 @@ describe("TraceMoeAPI", () => {
 				const errorMessage = "Concurrency limit exceeded";
 				const expectedError = new SearchError(errorMessage, 402);
 
-				expect.assertions(1);
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(402, { error: errorMessage });
+				const promise = traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
+				
+				await expect(promise).rejects.toThrow(expectedError);
+			});
 
-				try {
-					axiosMockAdapter.onPost(searchPostMatcher).replyOnce(402, { error: errorMessage });
-					const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
-				} catch (error) {
-					expect(error).toEqual(expectedError);
-				}
+			test("Rate limit without retry", async () => {
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(429);
+				const promise = traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
+
+				await expect(promise).rejects.toThrow();
+			});
+
+			test("Rate limit with retry", async () => {
+				const searchResponseMock = buildSearchResponseMock();
+				const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 1 };
+
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(429, undefined, xRateLimitResetHeader);
+				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseMock());
+
+				const response = await traceMoeAPIWrapperWithRetry.searchForAnimeSceneWithMediaAtPath(mediaPath);
+
+				expect(response).toEqual(searchResponseMock);
 			});
 		});
 	});
@@ -269,66 +301,41 @@ describe("TraceMoeAPI", () => {
 				const resultMock = buildSearchResponseMock().results[0];
 	
 				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-				const response = await traceMoeAPIWrapper.downloadVideoFromResult(resultMock, { shouldMute: true });
+				await traceMoeAPIWrapper.downloadVideoFromResult(resultMock, { shouldMute: true });
 	
 				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("mute");
 			});
 
-			test("Pass a destination name with the '.MP4' extension", async () => {
-				const extension = ".MP4";
-				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+			describe("Extensions", () => {
+				test("Pass a destination name with the '.MP4' extension", async () => {
+					await testVideoExtension(".MP4");
+				});
 	
-				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+				test("Pass a destination name with the '.m4a' extension", async () => {
+					await testVideoExtension(".m4a");
+				});
 	
-				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
-					buildSearchResponseMock().results[0],
-					{
-						size: MediaSize.medium,
-						shouldMute: false,
-						directory: destinationDirectory,
-						name: destinationName + extension
-					}
-				);
+				test("Pass a destination name with the '.M4A' extension", async () => {
+					await testVideoExtension(".M4A");
+				});
 	
-				expect(response).toBe(destinationPath);
-			});
-
-			test("Pass a destination name with the '.m4a' extension", async () => {
-				const extension = ".m4a";
-				const destinationPath = path.join(destinationDirectory, destinationName + extension);
-	
-				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-	
-				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
-					buildSearchResponseMock().results[0],
-					{
-						size: MediaSize.medium,
-						shouldMute: false,
-						directory: destinationDirectory,
-						name: destinationName + extension
-					}
-				);
-	
-				expect(response).toBe(destinationPath);
-			});
-
-			test("Pass a destination name with the '.M4A' extension", async () => {
-				const extension = ".M4A";
-				const destinationPath = path.join(destinationDirectory, destinationName + extension);
-	
-				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-	
-				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
-					buildSearchResponseMock().results[0],
-					{
-						size: MediaSize.medium,
-						shouldMute: false,
-						directory: destinationDirectory,
-						name: destinationName + extension
-					}
-				);
-	
-				expect(response).toBe(destinationPath);
+				async function testVideoExtension(extension: string): Promise<void> {
+					const destinationPath = path.join(destinationDirectory, destinationName + extension);
+		
+					axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+		
+					const response = await traceMoeAPIWrapper.downloadVideoFromResult(
+						buildSearchResponseMock().results[0],
+						{
+							size: MediaSize.medium,
+							shouldMute: false,
+							directory: destinationDirectory,
+							name: destinationName + extension
+						}
+					);
+		
+					expect(response).toBe(destinationPath);
+				}
 			});
 		});
 
@@ -352,46 +359,31 @@ describe("TraceMoeAPI", () => {
 				expect(axiosMockAdapter.history.get[0].url).toEqual(`${resultMock.imageURL}&size=${mediaSize}`);
 			});
 
-			test("Pass a destination name with the '.JPG' extension", async () => {
-				const extension = ".JPG";
-				const destinationPath = path.join(destinationDirectory, destinationName + extension);
+			describe("Extensions", () => {
+				test("Pass a destination name with the '.JPG' extension", async () => {
+					await testImageExtension(".JPG");
+				});
 	
-				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+				test("Pass a destination name with the '.jpeg' extension", async () => {
+					await testImageExtension(".jpeg");
+				});
 	
-				const response = await traceMoeAPIWrapper.downloadImageFromResult(
-					buildSearchResponseMock().results[0],
-					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
-				);
+				test("Pass a destination name with the '.JPEG' extension", async () => {
+					await testImageExtension(".JPEG");
+				});
 	
-				expect(response).toBe(destinationPath);
-			});
-
-			test("Pass a destination name with the '.jpeg' extension", async () => {
-				const extension = ".jpeg";
-				const destinationPath = path.join(destinationDirectory, destinationName + extension);
-	
-				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-	
-				const response = await traceMoeAPIWrapper.downloadImageFromResult(
-					buildSearchResponseMock().results[0],
-					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
-				);
-	
-				expect(response).toBe(destinationPath);
-			});
-
-			test("Pass a destination name with the '.JPEG' extension", async () => {
-				const extension = ".JPEG";
-				const destinationPath = path.join(destinationDirectory, destinationName + extension);
-	
-				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-	
-				const response = await traceMoeAPIWrapper.downloadImageFromResult(
-					buildSearchResponseMock().results[0],
-					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
-				);
-	
-				expect(response).toBe(destinationPath);
+				async function testImageExtension(extension: string): Promise<void> {
+					const destinationPath = path.join(destinationDirectory, destinationName + extension);
+		
+					axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+		
+					const response = await traceMoeAPIWrapper.downloadImageFromResult(
+						buildSearchResponseMock().results[0],
+						{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
+					);
+		
+					expect(response).toBe(destinationPath);
+				}
 			});
 		});
 	});

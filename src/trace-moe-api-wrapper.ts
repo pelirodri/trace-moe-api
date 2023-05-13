@@ -14,7 +14,7 @@ import {
 
 import type { RawSearchResponse, RawSearchResult, RawAnilistInfo, RawAPILimitsResponse } from "./types/raw-types";
 
-import axios, { type AxiosError } from "axios";
+import axios, { AxiosError, type AxiosResponse } from "axios";
 import fs, { promises as fsPromises } from "fs";
 import path from "path";
 import omitBy from "lodash.omitby";
@@ -28,9 +28,12 @@ const meEndpoint = baseURL + Endpoint.me;
 /**
  * Creates an API wrapper for trace.moe with an optional API key.
  * @param apiKey - Optional API key you can get from https://www.patreon.com/soruly.
+ * @param shouldRetry - Whether it should keep trying after hitting a rate limit.
  * @returns trace.moe API wrapper.
  */
-export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoeAPIWrapper {
+export function createTraceMoeAPIWrapper(apiKey: string | null = null, shouldRetry = false): TraceMoeAPIWrapper {
+	type RawResponse = RawSearchResponse | RawAPILimitsResponse;
+
 	const traceMoeAPI = axios.create({
 		baseURL,
 		headers: { "Content-Type": "application/x-www-form-urlencoded" }
@@ -47,8 +50,8 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoe
 		}
 	
 		const endpoint = searchEndpoint + buildQueryStringFromSearchOptions({ ...options }, mediaURL);
-		const rawResponse: RawSearchResponse = (await traceMoeAPI!.get(endpoint)).data;
-	
+		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI!.get(endpoint));
+			
 		return Object.freeze(buildSearchResponseFromRawResponse(rawResponse));
 	}
 	
@@ -58,14 +61,14 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoe
 	): Promise<SearchResponse> {
 		const endpoint = searchEndpoint + buildQueryStringFromSearchOptions({ ...options });
 		const mediaBuffer = await fsPromises.readFile(mediaPath);
-		const rawResponse: RawSearchResponse = (await traceMoeAPI!.post(endpoint, mediaBuffer)).data;
+		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI!.post(endpoint, mediaBuffer));
 	
 		return Object.freeze(buildSearchResponseFromRawResponse(rawResponse));
 	}
 	
 	async function fetchAPILimits(): Promise<APILimitsResponse> {
-		const rawResponse: RawAPILimitsResponse = (await traceMoeAPI!.get(meEndpoint)).data;
-	
+		const rawResponse: RawAPILimitsResponse = await makeAPICall(() => traceMoeAPI!.get(meEndpoint));
+
 		return Object.freeze({
 			id: rawResponse.id,
 			priority: rawResponse.priority,
@@ -110,6 +113,33 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoe
 		return destinationPath;
 	}
 
+	function makeAPICall<R extends RawResponse>(apiCall: () => Promise<AxiosResponse>): Promise<R> {
+		return new Promise(async (resolve, reject) => {
+			async function makeAPICall() {
+				try {
+					const response = await apiCall();
+					resolve(response.data);
+				} catch (error) {	
+					if (!(error instanceof AxiosError)) {
+						reject(error);
+						return;
+					}
+	
+					if (!shouldRetry || error.response?.status !== 429) {
+						reject(new Error(error.message));
+						return;
+					}
+	
+					setTimeout(async () => {
+						makeAPICall();
+					}, (error.response!.headers["x-ratelimit-reset"] * 1000) - Date.now());
+				}
+			}
+
+			makeAPICall();
+		});
+	}
+
 	function setUpAPIInterceptors(apiKey: string | null = null): void {
 		traceMoeAPI!.interceptors.request.use(request => {
 			if (apiKey) {
@@ -120,11 +150,14 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoe
 		});
 	
 		traceMoeAPI!.interceptors.response.use(response => response, (error: AxiosError) => {
-			// TODO: Handle rate limit error
 			if ((error.response?.data as RawSearchResponse)?.error) {
 				throw new SearchError((error.response!.data as RawSearchResponse).error, error.response!.status);
 			}
 	
+			if (error.response?.status == 429) {
+				throw error;
+			}
+
 			throw new Error(error.message);
 		});
 	}
