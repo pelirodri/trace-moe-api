@@ -1,7 +1,7 @@
 import {
 	Endpoint,
 	MediaSize,
-	APIError,
+	SearchError,
 	type TraceMoeAPIWrapper,
 	type SearchOptions,
 	type SearchResponse,
@@ -120,8 +120,9 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null): TraceMoe
 		});
 	
 		traceMoeAPI!.interceptors.response.use(response => response, (error: AxiosError) => {
+			// TODO: Handle rate limit error
 			if ((error.response?.data as RawSearchResponse)?.error) {
-				throw new APIError((error.response!.data as RawSearchResponse).error, error.response!.status);
+				throw new SearchError((error.response!.data as RawSearchResponse).error, error.response!.status);
 			}
 	
 			throw new Error(error.message);

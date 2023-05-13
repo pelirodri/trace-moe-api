@@ -142,8 +142,8 @@ export enum MediaSize {
     large = "l"
 }
 
-/** Error returned by the trace.moe API. */
-export class APIError extends Error {
+/** Error returned by the /search API endpoint. */
+export class SearchError extends Error {
     /** HTTP status code of the error. */
 	readonly statusCode: number;
 

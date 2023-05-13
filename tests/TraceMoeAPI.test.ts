@@ -1,5 +1,5 @@
 import { createTraceMoeAPIWrapper, baseURL, } from "../src/trace-moe-api-wrapper";
-import { Endpoint, APIError, MediaSize, type TraceMoeAPIWrapper } from "../src/types/types";
+import { Endpoint, SearchError, MediaSize, type TraceMoeAPIWrapper } from "../src/types/types";
 
 import {
 	buildRawSearchResponseMock,
@@ -98,9 +98,9 @@ describe("TraceMoeAPI", () => {
 				expect(headers).toMatchObject({ "X-Trace-Key": apiKey });
 			});
 
-			test("API error", async () => {
+			test("Search error", async () => {
 				const errorMessage = "Concurrency limit exceeded";
-				const expectedError = new APIError(errorMessage, 402);
+				const expectedError = new SearchError(errorMessage, 402);
 
 				expect.assertions(1);
 
@@ -189,9 +189,9 @@ describe("TraceMoeAPI", () => {
 				expect(headers).toMatchObject({ "X-Trace-Key": apiKey });
 			});
 
-			test("API error", async () => {
+			test("Search error", async () => {
 				const errorMessage = "Concurrency limit exceeded";
-				const expectedError = new APIError(errorMessage, 402);
+				const expectedError = new SearchError(errorMessage, 402);
 
 				expect.assertions(1);
 

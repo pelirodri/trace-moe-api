@@ -52,7 +52,7 @@ interface MediaDownloadOptions {
 ## Example
 
 ```typescript
-import { createTraceMoeAPIWrapper, MediaSize, APIError as TraceMoeAPIError } from "trace-moe-api";
+import { createTraceMoeAPIWrapper, MediaSize, SearchError } from "trace-moe-api";
 
 const traceMoeAPIWrapper = createTraceMoeAPIWrapper();
 // const traceMoeAPIWrapper = createTraceMoeAPIWrapper(apiKey);
@@ -78,7 +78,7 @@ try {
         }
     }
 } catch (error) {
-    if (error instanceof TraceMoeAPIError) {
+    if (error instanceof SearchError) {
         // Do something with `error`...
     }
 }
