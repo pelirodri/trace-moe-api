@@ -153,7 +153,7 @@ export class APIError extends Error {
 
 		Object.setPrototypeOf(this, new.target.prototype);
 	}
-};
+}
 
 export enum Endpoint {
 	search = "/search",
