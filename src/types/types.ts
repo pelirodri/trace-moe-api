@@ -139,7 +139,7 @@ export enum MediaSize {
 /** Error returned by the trace.moe API. */
 export class APIError extends Error {
     /** HTTP status code of the error. */
-	statusCode: number;
+	readonly statusCode: number;
 
     /**
      * @param message - Error message.
