@@ -2,8 +2,8 @@ export { createTraceMoeAPIWrapper } from "./trace-moe-api-wrapper";
 
 export {
 	MediaSize,
+	APIError,
 	type TraceMoeAPIWrapper,
-	type APIError,
 	type SearchOptions,
 	type SearchResponse,
 	type SearchResult,

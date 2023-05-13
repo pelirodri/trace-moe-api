@@ -1,7 +1,7 @@
 import {
 	Endpoint,
-	APIError,
 	MediaSize,
+	APIError,
 	type TraceMoeAPIWrapper,
 	type SearchOptions,
 	type SearchResponse,
