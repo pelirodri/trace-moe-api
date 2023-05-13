@@ -9,7 +9,10 @@ export interface TraceMoeAPIWrapper {
 	 * @param options - Search options.
 	 * @returns Search response.
 	 */
-	searchForAnimeSceneWithMediaURL: (mediaURL: string | URL, options?: SearchOptions) => Promise<SearchResponse>;
+	readonly searchForAnimeSceneWithMediaURL: (
+        mediaURL: string | URL,
+        options?: SearchOptions
+    ) => Promise<SearchResponse>;
 
 	/**
 	 * Fetches info about the detected anime scene from a local file path.
@@ -17,9 +20,12 @@ export interface TraceMoeAPIWrapper {
 	 * @param options - Search options.
 	 * @returns Search response.
 	 */
-	searchForAnimeSceneWithMediaAtPath: (mediaPath: string, options?: SearchOptions) => Promise<SearchResponse>;
+	readonly searchForAnimeSceneWithMediaAtPath: (
+        mediaPath: string,
+        options?: SearchOptions
+    ) => Promise<SearchResponse>;
 
-	fetchAPILimits: () => Promise<APILimitsResponse>;
+	readonly fetchAPILimits: () => Promise<APILimitsResponse>;
 
 	/**
 	 * Saves video preview of the found scene in a result.
@@ -27,7 +33,7 @@ export interface TraceMoeAPIWrapper {
 	 * @param options - Media download options.
 	 * @returns Path to saved file.
 	 */
-	downloadVideoFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;
+	readonly downloadVideoFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;
 
 	/**
 	 * Saves image preview of the found scene in a result.
@@ -35,7 +41,7 @@ export interface TraceMoeAPIWrapper {
 	 * @param options - Media download options.
 	 * @returns Path to saved file.
 	 */
-	downloadImageFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;	
+	readonly downloadImageFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;	
 }
 
 /** Options for searching anime scenes. */
