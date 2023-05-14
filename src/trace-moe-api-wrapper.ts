@@ -3,13 +3,14 @@ import {
 	MediaSize,
 	SearchError,
 	type TraceMoeAPIWrapper,
+	type TraceMoeAPIWrapperOptions,
 	type SearchOptions,
 	type SearchResponse,
 	type SearchResult,
 	type AnilistInfo,
 	type AnilistTitle,
 	type APILimitsResponse,
-	type MediaDownloadOptions
+	type MediaDownloadOptions,
 } from "./types/types";
 
 import type { RawSearchResponse, RawSearchResult, RawAnilistInfo, RawAPILimitsResponse } from "./types/raw-types";
@@ -26,12 +27,11 @@ const searchEndpoint = baseURL + Endpoint.search;
 const meEndpoint = baseURL + Endpoint.me;
 
 /**
- * Creates an API wrapper for trace.moe with an optional API key.
- * @param apiKey - Optional API key you can get from https://www.patreon.com/soruly.
- * @param shouldRetry - Whether it should keep trying after hitting a rate limit.
+ * Creates a wrapper for the trace.moe API with an optional API key.
+ * @param options - trace.moe API wrapper options.
  * @returns trace.moe API wrapper.
  */
-export function createTraceMoeAPIWrapper(apiKey: string | null = null, shouldRetry = false): TraceMoeAPIWrapper {
+export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): TraceMoeAPIWrapper {
 	type RawResponse = RawSearchResponse | RawAPILimitsResponse;
 
 	const traceMoeAPI = axios.create({
@@ -39,7 +39,7 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null, shouldRet
 		headers: { "Content-Type": "application/x-www-form-urlencoded" }
 	});
 
-	setUpAPIInterceptors(apiKey);
+	setUpAPIInterceptors(options?.apiKey);
 
 	async function searchForAnimeSceneWithMediaURL(
 		mediaURL: string | URL,
@@ -125,7 +125,7 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null, shouldRet
 						return;
 					}
 	
-					if (!shouldRetry || error.response?.status !== 429) {
+					if (!options?.shouldRetry || error.response?.status !== 429) {
 						reject(new Error(error.message));
 						return;
 					}
@@ -140,7 +140,7 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null, shouldRet
 		});
 	}
 
-	function setUpAPIInterceptors(apiKey: string | null = null): void {
+	function setUpAPIInterceptors(apiKey?: string): void {
 		traceMoeAPI!.interceptors.request.use(request => {
 			if (apiKey) {
 				request.headers["x-trace-key"] = apiKey;
@@ -163,7 +163,7 @@ export function createTraceMoeAPIWrapper(apiKey: string | null = null, shouldRet
 	}
 
 	return Object.freeze({
-		apiKey,
+		apiKey: options?.apiKey ?? null,
 		searchForAnimeSceneWithMediaURL,
 		searchForAnimeSceneWithMediaAtPath,
 		fetchAPILimits,

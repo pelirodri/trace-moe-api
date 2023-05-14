@@ -28,8 +28,8 @@ describe("TraceMoeAPI", () => {
 
 	beforeAll(() => {
 		traceMoeAPIWrapper = createTraceMoeAPIWrapper();
-		traceMoeAPIWrapperWithKey = createTraceMoeAPIWrapper(apiKey);
-		traceMoeAPIWrapperWithRetry = createTraceMoeAPIWrapper(null, true);
+		traceMoeAPIWrapperWithKey = createTraceMoeAPIWrapper({ apiKey });
+		traceMoeAPIWrapperWithRetry = createTraceMoeAPIWrapper({ shouldRetry: true });
 	});
 
 	afterEach(() => {

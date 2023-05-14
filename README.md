@@ -55,7 +55,7 @@ interface MediaDownloadOptions {
 import { createTraceMoeAPIWrapper, MediaSize, SearchError } from "trace-moe-api";
 
 const traceMoeAPIWrapper = createTraceMoeAPIWrapper();
-// const traceMoeAPIWrapper = createTraceMoeAPIWrapper(apiKey);
+// const traceMoeAPIWrapper = createTraceMoeAPIWrapper({ apiKey });
 
 try {
     const apiLimits = await traceMoeAPI.fetchAPILimits();

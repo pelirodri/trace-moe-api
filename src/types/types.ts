@@ -1,4 +1,4 @@
-/** API wrapper for trace.moe. */
+/** Wrapper for trace.moe API. */
 export interface TraceMoeAPIWrapper {
 	/** Optional API key you can get from https://www.patreon.com/soruly. */
 	readonly apiKey: string | null;
@@ -42,6 +42,14 @@ export interface TraceMoeAPIWrapper {
 	 * @returns Path to saved file.
 	 */
 	readonly downloadImageFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;	
+}
+
+/** Options than can be passed to `constructTraceMoeAPIWrapper`. */
+export interface TraceMoeAPIWrapperOptions {
+    /** Optional API key you can get from https://www.patreon.com/soruly. */
+    apiKey?: string;
+    /** Whether it should keep trying after hitting a rate limit. */
+    shouldRetry?: boolean;
 }
 
 /** Options for searching anime scenes. */
