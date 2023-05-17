@@ -1,4 +1,4 @@
-import { type SearchResponse, type AnilistInfo, type APILimitsResponse } from "../../src";
+import type { SearchResponse, AnilistInfo, APILimitsResponse } from "../../src";
 import type { RawSearchResponse, RawAnilistInfo, RawAPILimitsResponse } from "../../src/types/raw-types";
 
 const baseMediaURL = "https://media.trace.moe";
@@ -12,7 +12,7 @@ const videoURL = `${baseMediaURL}/video/21034/${mediaFilename}` +
 const imageURL = `${baseMediaURL}/image/21034/${mediaFilename}.jpg` +
 	"?t=290.625&now=1682020800&token=HyeNAbd2qC9kx2QgTJfMY5fJ7Y";
 
-export function buildRawSearchResponseMock(shouldIncludeAnilistInfo = false): RawSearchResponse {
+export function buildRawSearchResponseSample(shouldIncludeAnilistInfo = false): RawSearchResponse {
 	let anilist: number | RawAnilistInfo = 21034;
 
 	if (shouldIncludeAnilistInfo) {
@@ -47,7 +47,7 @@ export function buildRawSearchResponseMock(shouldIncludeAnilistInfo = false): Ra
 	};
 }
 
-export function buildSearchResponseMock(shouldIncludeAnilistInfo = false): SearchResponse {
+export function buildSearchResponseSample(shouldIncludeAnilistInfo = false): SearchResponse {
 	let anilistInfo: AnilistInfo = { id: 21034 };
 
 	if (shouldIncludeAnilistInfo) {
@@ -81,7 +81,7 @@ export function buildSearchResponseMock(shouldIncludeAnilistInfo = false): Searc
 	};
 }
 
-export function buildRawAPILimitsResponseMock(apiKey: string | null = null): RawAPILimitsResponse {
+export function buildRawAPILimitsResponseSample(apiKey: string | null = null): RawAPILimitsResponse {
 	return {
 		id: apiKey ?? "127.0.0.1",
 		priority: 0,
@@ -91,7 +91,7 @@ export function buildRawAPILimitsResponseMock(apiKey: string | null = null): Raw
 	}
 }
 
-export function buildAPILimitsResponseMock(apiKey: string | null = null): APILimitsResponse {
+export function buildAPILimitsResponseSample(apiKey: string | null = null): APILimitsResponse {
 	return {
 		id: apiKey ?? "127.0.0.1",
 		priority: 0,
