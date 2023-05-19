@@ -119,7 +119,7 @@ describe("TraceMoeAPI", () => {
 
 			test("Rate limit with retry", async () => {
 				const expectedSearchResponse = buildSearchResponseSample();
-				const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 1 };
+				const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 0.01 };
 
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(429, undefined, xRateLimitResetHeader);
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseSample());
@@ -225,7 +225,7 @@ describe("TraceMoeAPI", () => {
 
 			test("Rate limit with retry", async () => {
 				const expectedSearchResponse = buildSearchResponseSample();
-				const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 1 };
+				const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 0.01 };
 
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(429, undefined, xRateLimitResetHeader);
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseSample());
