@@ -313,14 +313,6 @@ describe("TraceMoeAPI", () => {
 					await testVideoExtension(".MP4");
 				});
 	
-				test("Pass a destination name with the '.m4a' extension", async () => {
-					await testVideoExtension(".m4a");
-				});
-	
-				test("Pass a destination name with the '.M4A' extension", async () => {
-					await testVideoExtension(".M4A");
-				});
-	
 				async function testVideoExtension(extension: string): Promise<void> {
 					const destinationPath = path.join(destinationDirectory, destinationName + extension);
 		

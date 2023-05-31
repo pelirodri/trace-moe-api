@@ -227,7 +227,7 @@ function buildSearchResultFromRawResult(rawResult: RawSearchResult): SearchResul
 }
 
 function buildFilenameFromResult(result: SearchResult, isVideo: boolean, filename: string | undefined): string {
-	const supportedVideoExtensions = [".mp4", ".m4a"];
+	const supportedVideoExtensions = [".mp4"];
 	const supportedImageExtensions = [".jpg", ".jpeg"];
 
 	if (!filename) {
