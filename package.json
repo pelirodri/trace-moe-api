@@ -11,7 +11,7 @@
 	"homepage": "https://github.com/pelirodri/trace-moe-api#readme",
 	"bugs": "https://github.com/pelirodri/trace-moe-api/issues",
 	"scripts": {
-		"build": "tsc",
+		"build": "rimraf dist && tsc",
 		"test": "jest",
 		"test:coverage": "jest --coverage"
 	},
@@ -38,6 +38,7 @@
 		"axios-mock-adapter": "^1.21.4",
 		"jest": "^29.5.0",
 		"mock-fs": "^5.2.0",
+		"rimraf": "^5.0.1",
 		"ts-jest": "^29.1.0",
 		"ts-node": "^10.9.1",
 		"typescript": "^5.0.4"
