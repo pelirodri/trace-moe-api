@@ -34,10 +34,7 @@ const meEndpoint = baseURL + Endpoint.me;
 export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): TraceMoeAPIWrapper {
 	type RawResponse = RawSearchResponse | RawAPILimitsResponse;
 
-	const traceMoeAPI = axios.create({
-		baseURL,
-		headers: { "Content-Type": "application/x-www-form-urlencoded" }
-	});
+	const traceMoeAPI = axios.create({ baseURL, headers: { "Content-Type": "application/x-www-form-urlencoded" } });
 
 	setUpAPIInterceptors(options?.apiKey);
 
@@ -50,7 +47,7 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 		}
 	
 		const endpoint = searchEndpoint + buildQueryStringFromSearchOptions({ ...options }, mediaURL);
-		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI!.get(endpoint));
+		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI.get(endpoint));
 			
 		return Object.freeze(buildSearchResponseFromRawResponse(rawResponse));
 	}
@@ -61,13 +58,13 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 	): Promise<SearchResponse> {
 		const endpoint = searchEndpoint + buildQueryStringFromSearchOptions({ ...options });
 		const mediaBuffer = await fsPromises.readFile(mediaPath);
-		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI!.post(endpoint, mediaBuffer));
+		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI.post(endpoint, mediaBuffer));
 	
 		return Object.freeze(buildSearchResponseFromRawResponse(rawResponse));
 	}
 	
 	async function fetchAPILimits(): Promise<APILimitsResponse> {
-		const rawResponse: RawAPILimitsResponse = await makeAPICall(() => traceMoeAPI!.get(meEndpoint));
+		const rawResponse: RawAPILimitsResponse = await makeAPICall(() => traceMoeAPI.get(meEndpoint));
 
 		return Object.freeze({
 			id: rawResponse.id,
@@ -141,7 +138,7 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 	}
 
 	function setUpAPIInterceptors(apiKey?: string): void {
-		traceMoeAPI!.interceptors.request.use(request => {
+		traceMoeAPI.interceptors.request.use(request => {
 			if (apiKey) {
 				request.headers["x-trace-key"] = apiKey;
 			}
@@ -149,7 +146,7 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 			return request;
 		});
 	
-		traceMoeAPI!.interceptors.response.use(response => response, (error: AxiosError) => {
+		traceMoeAPI.interceptors.response.use(response => response, (error: AxiosError) => {
 			if ((error.response?.data as RawSearchResponse)?.error) {
 				throw new SearchError((error.response!.data as RawSearchResponse).error, error.response!.status);
 			}
