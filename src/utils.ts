@@ -1,8 +1,39 @@
 import type { SearchOptions, SearchResponse, SearchResult, AnilistInfo, AnilistTitle } from "./types/types";
-import type { RawSearchResponse, RawSearchResult, RawAnilistInfo } from "./types/raw-types";
+import type { RawSearchResponse, RawAPILimitsResponse, RawSearchResult, RawAnilistInfo } from "./types/raw-types";
 
 import omitBy from "lodash.omitby";
 import isUndefined from "lodash.isundefined";
+import { AxiosError, type AxiosResponse } from "axios";
+
+export function makeAPICall<R extends RawSearchResponse | RawAPILimitsResponse>(
+	apiCall: () => Promise<AxiosResponse>,
+	shouldRetry?: boolean
+): Promise<R> {
+	return new Promise(async (resolve, reject) => {
+		async function makeAPICall() {
+			try {
+				const response = await apiCall();
+				resolve(response.data);
+			} catch (error) {	
+				if (!(error instanceof AxiosError)) {
+					reject(error);
+					return;
+				}
+
+				if (!shouldRetry || error.response?.status !== 429) {
+					reject(new Error(error.message));
+					return;
+				}
+
+				setTimeout(async () => {
+					makeAPICall();
+				}, (error.response!.headers["x-ratelimit-reset"] * 1000) - Date.now());
+			}
+		}
+
+		makeAPICall();
+	});
+}
 
 export function buildQueryStringFromSearchOptions(options: SearchOptions, mediaURL?: string): string {
 	if (Object.values(options).length === 0 && !mediaURL) {

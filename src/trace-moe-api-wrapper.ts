@@ -1,7 +1,6 @@
 import {
 	Endpoint,
 	MediaSize,
-	SearchError,
 	type TraceMoeAPIWrapper,
 	type TraceMoeAPIWrapperOptions,
 	type SearchOptions,
@@ -12,14 +11,11 @@ import {
 } from "./types/types";
 
 import type { RawSearchResponse, RawAPILimitsResponse } from "./types/raw-types";
-
+import { configTraceMoeAPI, baseURL } from "./axios.config";
 import * as utils from "./utils";
 
-import axios, { AxiosError, type AxiosResponse } from "axios";
 import fs, { promises as fsPromises } from "fs";
 import path from "path";
-
-export const baseURL = "https://api.trace.moe";
 
 const searchEndpoint = baseURL + Endpoint.search;
 const meEndpoint = baseURL + Endpoint.me;
@@ -30,11 +26,8 @@ const meEndpoint = baseURL + Endpoint.me;
  * @returns trace.moe API wrapper.
  */
 export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): TraceMoeAPIWrapper {
-	type RawResponse = RawSearchResponse | RawAPILimitsResponse;
-
-	const traceMoeAPI = axios.create({ baseURL, headers: { "Content-Type": "application/x-www-form-urlencoded" } });
-
-	setUpAPIInterceptors(options?.apiKey);
+	const traceMoeAPI = configTraceMoeAPI(options?.apiKey);
+	const shouldRetry = options?.shouldRetry;
 
 	async function searchForAnimeSceneWithMediaURL(
 		mediaURL: string | URL,
@@ -45,7 +38,8 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 		}
 	
 		const endpoint = searchEndpoint + utils.buildQueryStringFromSearchOptions({ ...options }, mediaURL);
-		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI.get(endpoint));
+		const apiCall = () => traceMoeAPI.get(endpoint);
+		const rawResponse: RawSearchResponse = await utils.makeAPICall(apiCall, shouldRetry);
 			
 		return Object.freeze(utils.buildSearchResponseFromRawResponse(rawResponse));
 	}
@@ -56,13 +50,15 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 	): Promise<SearchResponse> {
 		const endpoint = searchEndpoint + utils.buildQueryStringFromSearchOptions({ ...options });
 		const mediaBuffer = await fsPromises.readFile(mediaPath);
-		const rawResponse: RawSearchResponse = await makeAPICall(() => traceMoeAPI.post(endpoint, mediaBuffer));
+		const apiCall = () => traceMoeAPI.post(endpoint, mediaBuffer);
+		const rawResponse: RawSearchResponse = await utils.makeAPICall(apiCall, shouldRetry);
 	
 		return Object.freeze(utils.buildSearchResponseFromRawResponse(rawResponse));
 	}
 	
 	async function fetchAPILimits(): Promise<APILimitsResponse> {
-		const rawResponse: RawAPILimitsResponse = await makeAPICall(() => traceMoeAPI.get(meEndpoint));
+		const apiCall = () => traceMoeAPI.get(meEndpoint);
+		const rawResponse: RawAPILimitsResponse = await utils.makeAPICall(apiCall, shouldRetry);
 
 		return Object.freeze({
 			id: rawResponse.id,
@@ -106,55 +102,6 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 		await fsPromises.writeFile(destinationPath, mediaBuffer);
 	
 		return destinationPath;
-	}
-
-	function makeAPICall<R extends RawResponse>(apiCall: () => Promise<AxiosResponse>): Promise<R> {
-		return new Promise(async (resolve, reject) => {
-			async function makeAPICall() {
-				try {
-					const response = await apiCall();
-					resolve(response.data);
-				} catch (error) {	
-					if (!(error instanceof AxiosError)) {
-						reject(error);
-						return;
-					}
-	
-					if (!options?.shouldRetry || error.response?.status !== 429) {
-						reject(new Error(error.message));
-						return;
-					}
-	
-					setTimeout(async () => {
-						makeAPICall();
-					}, (error.response!.headers["x-ratelimit-reset"] * 1000) - Date.now());
-				}
-			}
-
-			makeAPICall();
-		});
-	}
-
-	function setUpAPIInterceptors(apiKey?: string): void {
-		traceMoeAPI.interceptors.request.use(request => {
-			if (apiKey) {
-				request.headers["x-trace-key"] = apiKey;
-			}
-	
-			return request;
-		});
-	
-		traceMoeAPI.interceptors.response.use(response => response, (error: AxiosError) => {
-			if ((error.response?.data as RawSearchResponse)?.error) {
-				throw new SearchError((error.response!.data as RawSearchResponse).error, error.response!.status);
-			}
-	
-			if (error.response?.status == 429) {
-				throw error;
-			}
-
-			throw new Error(error.message);
-		});
 	}
 
 	return Object.freeze({

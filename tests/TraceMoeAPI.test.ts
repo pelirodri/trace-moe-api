@@ -1,5 +1,6 @@
-import { createTraceMoeAPIWrapper, baseURL, } from "../src/trace-moe-api-wrapper";
+import { createTraceMoeAPIWrapper } from "../src/trace-moe-api-wrapper";
 import { Endpoint, SearchError, MediaSize, type TraceMoeAPIWrapper } from "../src/types/types";
+import { baseURL } from "../src/axios.config";
 
 import {
 	buildRawSearchResponseSample,
