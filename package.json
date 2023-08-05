@@ -11,9 +11,11 @@
 	"homepage": "https://github.com/pelirodri/trace-moe-api#readme",
 	"bugs": "https://github.com/pelirodri/trace-moe-api/issues",
 	"scripts": {
-		"build": "rimraf dist && tsc",
+		"build": "yarn clean && tsc",
 		"test": "jest",
-		"test:coverage": "jest --coverage"
+		"test:coverage": "jest --coverage",
+		"clean": "rimraf dist",
+		"prepublishOnly": "yarn build"
 	},
 	"keywords": [
 		"trace.moe",
