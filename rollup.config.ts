@@ -14,8 +14,17 @@ export default [
 				format: "cjs"
 			}
 		],
+		external: [
+			"fs",
+			"path",
+			"axios",
+			/lodash/
+		],
 		plugins: [
-			esbuild({ minify: true, target: "esnext" }),
+			esbuild({
+				minify: true,
+				target: "esnext"
+			}),
 		]
 	},
 	{
