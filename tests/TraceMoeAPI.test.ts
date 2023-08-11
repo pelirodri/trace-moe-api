@@ -77,6 +77,7 @@ describe("TraceMoeAPI", () => {
 				axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseSample());
 				const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
 
+				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).not.toContain("anilistInfo");
 				expect(response).toEqual(expectedSearchResponse);
 			});
 
@@ -90,6 +91,7 @@ describe("TraceMoeAPI", () => {
 					{ shouldIncludeExtraAnilistInfo: true }
 				);
 
+				expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("anilistInfo");
 				expect(response).toEqual(expectedSearchResponse);
 			});
 
@@ -175,6 +177,7 @@ describe("TraceMoeAPI", () => {
 				axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseSample());
 				const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath)
 
+				expect((new URL(axiosMockAdapter.history.post[0].url!).search)).not.toContain("anilistInfo");
 				expect(response).toEqual(expectedSearchResponse);
 			});
 
@@ -188,6 +191,7 @@ describe("TraceMoeAPI", () => {
 					{ shouldIncludeExtraAnilistInfo: true }
 				);
 
+				expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain("anilistInfo");
 				expect(response).toEqual(expectedSearchResponse);
 			});
 
