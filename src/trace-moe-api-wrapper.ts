@@ -7,7 +7,7 @@ import {
 	type SearchResponse,
 	type SearchResult,
 	type APILimitsResponse,
-	type MediaDownloadOptions,
+	type MediaDownloadOptions
 } from "./types/types";
 
 import type { RawSearchResponse, RawAPILimitsResponse } from "./types/raw-types";
@@ -36,14 +36,14 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 		if (mediaURL instanceof URL) {
 			mediaURL = mediaURL.href;
 		}
-	
+
 		const endpoint = searchEndpoint + utils.buildQueryStringFromSearchOptions({ ...options }, mediaURL);
 		const apiCall = () => traceMoeAPI.get(endpoint);
 		const rawResponse: RawSearchResponse = await utils.makeAPICall(apiCall, shouldRetry);
-			
+
 		return Object.freeze(utils.buildSearchResponseFromRawResponse(rawResponse));
 	}
-	
+
 	async function searchForAnimeSceneWithMediaAtPath(
 		mediaPath: string,
 		options?: SearchOptions
@@ -52,10 +52,10 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 		const mediaBuffer = await fsPromises.readFile(mediaPath);
 		const apiCall = () => traceMoeAPI.post(endpoint, mediaBuffer);
 		const rawResponse: RawSearchResponse = await utils.makeAPICall(apiCall, shouldRetry);
-	
+
 		return Object.freeze(utils.buildSearchResponseFromRawResponse(rawResponse));
 	}
-	
+
 	async function fetchAPILimits(): Promise<APILimitsResponse> {
 		const apiCall = () => traceMoeAPI.get(meEndpoint);
 		const rawResponse: RawAPILimitsResponse = await utils.makeAPICall(apiCall, shouldRetry);
@@ -68,18 +68,18 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 			remainingQuota: rawResponse.quota - rawResponse.quotaUsed
 		});
 	}
-	
+
 	async function downloadVideoFromResult(result: SearchResult, options?: MediaDownloadOptions): Promise<string> {
 		const mediaSize = options?.size ?? MediaSize.medium;
 		const mediaURL = `${result.videoURL}&size=${mediaSize}${options?.shouldMute ? "&mute" : ""}`;
-	
+
 		return downloadMediaFromURL(mediaURL, result, true, options?.directory, options?.name);
 	}
-	
+
 	async function downloadImageFromResult(result: SearchResult, options?: MediaDownloadOptions): Promise<string> {
 		const mediaSize = options?.size ?? MediaSize.medium;
 		const mediaURL = `${result.imageURL}&size=${mediaSize}`;
-	
+
 		return downloadMediaFromURL(mediaURL, result, false, options?.directory, options?.name);
 	}
 
@@ -93,14 +93,14 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 		if (!fs.existsSync(destinationDirectory)) {
 			await fsPromises.mkdir(destinationDirectory, { recursive: true });
 		}
-	
+
 		destinationName = utils.buildFilenameFromResult(result, isVideo, destinationName);
-	
+
 		const destinationPath = path.join(destinationDirectory, destinationName);
 		const mediaBuffer = Buffer.from((await traceMoeAPI.get(mediaURL, { responseType: "arraybuffer" })).data);
-	
+
 		await fsPromises.writeFile(destinationPath, mediaBuffer);
-	
+
 		return destinationPath;
 	}
 
