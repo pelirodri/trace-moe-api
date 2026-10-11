@@ -32,9 +32,9 @@ downloadImageFromResult(result: SearchResult, options?: MediaDownloadOptions): P
 
 ```typescript
 interface SearchOptions {
-    shouldCutBlackBorders?: boolean;
-    anilistID?: number | string;
-    shouldIncludeExtraAnilistInfo?: boolean;
+	shouldCutBlackBorders?: boolean;
+	anilistID?: number | string;
+	shouldIncludeExtraAnilistInfo?: boolean;
 }
 ```
 
@@ -42,10 +42,10 @@ interface SearchOptions {
 
 ```typescript
 interface MediaDownloadOptions {
-    size?: MediaSize;
-    shouldMute?: boolean;
-    directory?: string;
-    name?: string;
+	size?: MediaSize;
+	shouldMute?: boolean;
+	directory?: string;
+	name?: string;
 }
 ```
 
@@ -58,29 +58,29 @@ const traceMoeAPIWrapper = createTraceMoeAPIWrapper();
 // const traceMoeAPIWrapper = createTraceMoeAPIWrapper({ apiKey });
 
 try {
-    const apiLimits = await traceMoeAPI.fetchAPILimits();
-	
-    if (apiLimits.remainingQuota > 0) {
-        const mediaURL = "https://images.plurk.com/32B15UXxymfSMwKGTObY5e.jpg";
-	
-        const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
-        // const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
+	const apiLimits = await traceMoeAPI.fetchAPILimits();
 
-        if (response.results.length > 0) {
-            const result = response.results[0];
+	if (apiLimits.remainingQuota > 0) {
+		const mediaURL = "https://images.plurk.com/32B15UXxymfSMwKGTObY5e.jpg";
 
-            console.log(result.anilistInfo.id);
+		const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
+		// const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
-            const downloadPath = await traceMoeAPIWrapper.downloadVideoFromResult(result, MediaSize.large);
-            // const downloadPath = await traceMoeAPIWrapper.downloadImageFromResult(result, MediaSize.large);
+		if (response.results.length > 0) {
+			const result = response.results[0];
 
-            // Do something with `downloadPath`...		
-        }
-    }
+			console.log(result.anilistInfo.id);
+
+			const downloadPath = await traceMoeAPIWrapper.downloadVideoFromResult(result, MediaSize.large);
+			// const downloadPath = await traceMoeAPIWrapper.downloadImageFromResult(result, MediaSize.large);
+
+			// Do something with `downloadPath`...
+		}
+	}
 } catch (error) {
-    if (error instanceof SearchError) {
-        // Do something with `error`...
-    }
+	if (error instanceof SearchError) {
+		// Do something with `error`...
+	}
 }
 ```
 
@@ -90,7 +90,9 @@ try {
 
 ```typescript
 {
-    checkedFramesCount: 5890247,
+    checkedFramesCount: 173362743,
+    totalQuota: 100,
+    remainingQuota: 90,
     results: [] // Array of `SearchResult` objects
 }
 ```
@@ -100,13 +102,17 @@ try {
 ```typescript
 {
     anilistInfo: { id: 21034 },
-    filename: "[Leopard-Raws] Gochuumon wa Usagi Desu ka 2nd - 01 RAW (KBS 1280x720 x264 AAC).mp4",
+    filename: "Gochuumon wa Usagi Desuka2 - 01 (BD 1280x720 x264 AAC).mp4",
     episode: 1,
-    fromTimestamp: 288.58,
-    toTimestamp: 292.67,
-    similarityPercentage: 99,
-    videoURL: "Video preview URL",
-    imageURL: "Image preview URL"
+    episodeStart: 1,
+    episodeEnd: 1,
+    duration: 1418.0834,
+    fromTimestamp: 272.1886,
+    atTimestamp: 279.7795,
+    toTimestamp: 282.6574,
+    similarityPercentage: 99.22,
+    videoURL: "Preview video URL",
+    imageURL: "Preview image URL"
 }
 ```
 
@@ -133,8 +139,8 @@ try {
     id: "Either your API key or your IP address",
     priority: 0,
     concurrency: 1,
-    totalQuota: 1000,
-    remainingQuota: 900
+    totalQuota: 100,
+    remainingQuota: 90
 }
 ```
 
