@@ -9,6 +9,7 @@ import {
 	buildAPILimitsResponseSample
 } from "./utils/response-sample-builders";
 
+import { beforeAll, afterAll, afterEach, describe, test, expect } from "@jest/globals";
 import axios from "axios";
 import AxiosMockAdapter from "axios-mock-adapter";
 import fs from "fs";
@@ -50,7 +51,7 @@ describe("Search for anime scene", () => {
 			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseSample());
 			await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`url=${mediaURL}`);
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain(`url=${mediaURL}`);
 		});
 
 		test("Filter by AniList ID", async () => {
@@ -60,14 +61,14 @@ describe("Search for anime scene", () => {
 			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, rawSearchResponseSample);
 			await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL, { anilistID });
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain(`anilistID=${anilistID}`);
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain(`anilistID=${anilistID}`);
 		});
 
 		test("Cut black borders", async () => {
 			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseSample());
 			await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL, { shouldCutBlackBorders: true });
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("cutBorders");
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain("cutBorders");
 		});
 
 		test("Don't include extra AniList info", async () => {
@@ -76,7 +77,7 @@ describe("Search for anime scene", () => {
 			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseSample());
 			const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL);
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).not.toContain("anilistInfo");
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).not.toContain("anilistInfo");
 			expect(response).toEqual(expectedSearchResponse);
 		});
 
@@ -85,12 +86,11 @@ describe("Search for anime scene", () => {
 
 			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseSample(true));
 
-			const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(
-				mediaURL,
-				{ shouldIncludeExtraAnilistInfo: true }
-			);
+			const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaURL(mediaURL, {
+				shouldIncludeExtraAnilistInfo: true
+			});
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("anilistInfo");
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain("anilistInfo");
 			expect(response).toEqual(expectedSearchResponse);
 		});
 
@@ -121,7 +121,7 @@ describe("Search for anime scene", () => {
 
 		test("Rate limit with retry", async () => {
 			const expectedSearchResponse = buildSearchResponseSample();
-			const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 0.01 };
+			const xRateLimitResetHeader = { "x-ratelimit-reset": Date.now() / 1000 + 0.01 };
 
 			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(429, undefined, xRateLimitResetHeader);
 			axiosMockAdapter.onGet(searchGetMatcher).replyOnce(200, buildRawSearchResponseSample());
@@ -160,23 +160,23 @@ describe("Search for anime scene", () => {
 			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, rawSearchResponseSample);
 			await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath, { anilistID });
 
-			expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain(`anilistID=${anilistID}`);
+			expect(new URL(axiosMockAdapter.history.post[0].url!).search).toContain(`anilistID=${anilistID}`);
 		});
 
 		test("Cut black borders", async () => {
 			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseSample());
 			await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath, { shouldCutBlackBorders: true });
 
-			expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain("cutBorders");
+			expect(new URL(axiosMockAdapter.history.post[0].url!).search).toContain("cutBorders");
 		});
 
 		test("Without extra AniList info", async () => {
 			const expectedSearchResponse = buildSearchResponseSample();
 
 			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseSample());
-			const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath)
+			const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
 
-			expect((new URL(axiosMockAdapter.history.post[0].url!).search)).not.toContain("anilistInfo");
+			expect(new URL(axiosMockAdapter.history.post[0].url!).search).not.toContain("anilistInfo");
 			expect(response).toEqual(expectedSearchResponse);
 		});
 
@@ -185,12 +185,11 @@ describe("Search for anime scene", () => {
 
 			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseSample(true));
 
-			const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(
-				mediaPath,
-				{ shouldIncludeExtraAnilistInfo: true }
-			);
+			const response = await traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath, {
+				shouldIncludeExtraAnilistInfo: true
+			});
 
-			expect((new URL(axiosMockAdapter.history.post[0].url!).search)).toContain("anilistInfo");
+			expect(new URL(axiosMockAdapter.history.post[0].url!).search).toContain("anilistInfo");
 			expect(response).toEqual(expectedSearchResponse);
 		});
 
@@ -216,7 +215,7 @@ describe("Search for anime scene", () => {
 
 			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(402, { error: errorMessage });
 			const promise = traceMoeAPIWrapper.searchForAnimeSceneWithMediaAtPath(mediaPath);
-			
+
 			await expect(promise).rejects.toThrow(expectedError);
 		});
 
@@ -229,7 +228,7 @@ describe("Search for anime scene", () => {
 
 		test("Rate limit with retry", async () => {
 			const expectedSearchResponse = buildSearchResponseSample();
-			const xRateLimitResetHeader = { "x-ratelimit-reset": (Date.now() / 1000) + 0.01 };
+			const xRateLimitResetHeader = { "x-ratelimit-reset": Date.now() / 1000 + 0.01 };
 
 			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(429, undefined, xRateLimitResetHeader);
 			axiosMockAdapter.onPost(searchPostMatcher).replyOnce(200, buildRawSearchResponseSample());
@@ -256,7 +255,7 @@ describe("Fetch API limits", () => {
 
 		const rawSearchResponseSample = buildRawAPILimitsResponseSample(traceMoeAPIWrapper.apiKey);
 		axiosMockAdapter.onGet(meEndpoint).replyOnce(200, rawSearchResponseSample);
-		
+
 		const response = await traceMoeAPIWrapperWithKey.fetchAPILimits();
 
 		expect(response).toEqual(expectedAPILimitsResponse);
@@ -282,7 +281,7 @@ describe("Download media previews", () => {
 	afterAll(() => {
 		mockFS.restore();
 	});
-	
+
 	describe("Videos", () => {
 		test("Download", async () => {
 			const videoBuffer = Buffer.from([8, 6, 7, 5, 3, 0, 9]);
@@ -292,10 +291,12 @@ describe("Download media previews", () => {
 
 			axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, videoBuffer);
 
-			const response = await traceMoeAPIWrapper.downloadVideoFromResult(
-				resultMock,
-				{ size: mediaSize, shouldMute: false, directory: destinationDirectory, name: destinationName }
-			);
+			const response = await traceMoeAPIWrapper.downloadVideoFromResult(resultMock, {
+				size: mediaSize,
+				shouldMute: false,
+				directory: destinationDirectory,
+				name: destinationName
+			});
 
 			expect(response).toBe(destinationPath);
 			expect(fs.existsSync(destinationPath)).toBeTruthy();
@@ -309,7 +310,7 @@ describe("Download media previews", () => {
 			axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
 			await traceMoeAPIWrapper.downloadVideoFromResult(resultMock, { shouldMute: true });
 
-			expect((new URL(axiosMockAdapter.history.get[0].url!).search)).toContain("mute");
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain("mute");
 		});
 
 		describe("Extensions", () => {
@@ -319,9 +320,9 @@ describe("Download media previews", () => {
 
 			async function testVideoExtension(extension: string): Promise<void> {
 				const destinationPath = path.join(destinationDirectory, destinationName + extension);
-	
+
 				axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-	
+
 				const response = await traceMoeAPIWrapper.downloadVideoFromResult(
 					buildSearchResponseSample().results[0],
 					{
@@ -331,7 +332,7 @@ describe("Download media previews", () => {
 						name: destinationName + extension
 					}
 				);
-	
+
 				expect(response).toBe(destinationPath);
 			}
 		});
@@ -346,10 +347,11 @@ describe("Download media previews", () => {
 
 			axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, imageBuffer);
 
-			const response = await traceMoeAPIWrapper.downloadImageFromResult(
-				resultMock,
-				{ size: mediaSize, directory: destinationDirectory, name: destinationName },
-			);
+			const response = await traceMoeAPIWrapper.downloadImageFromResult(resultMock, {
+				size: mediaSize,
+				directory: destinationDirectory,
+				name: destinationName
+			});
 
 			expect(response).toBe(destinationPath);
 			expect(fs.existsSync(destinationPath)).toBeTruthy();
@@ -372,14 +374,14 @@ describe("Download media previews", () => {
 
 			async function testImageExtension(extension: string): Promise<void> {
 				const destinationPath = path.join(destinationDirectory, destinationName + extension);
-	
+
 				axiosMockAdapter.onGet(imageGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
-	
+
 				const response = await traceMoeAPIWrapper.downloadImageFromResult(
 					buildSearchResponseSample().results[0],
-					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension },
+					{ size: MediaSize.medium, directory: destinationDirectory, name: destinationName + extension }
 				);
-	
+
 				expect(response).toBe(destinationPath);
 			}
 		});
