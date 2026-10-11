@@ -313,6 +313,24 @@ describe("Download media previews", () => {
 			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain("mute");
 		});
 
+		test("Request with min duration", async () => {
+			const resultMock = buildSearchResponseSample().results[0];
+
+			axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+			await traceMoeAPIWrapper.downloadVideoFromResult(resultMock, { minDuration: 2 });
+
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain("minDuration=2");
+		});
+
+		test("Request with max duration", async () => {
+			const resultMock = buildSearchResponseSample().results[0];
+
+			axiosMockAdapter.onGet(videoGetMatcher).replyOnce(200, Buffer.from([8, 6, 7, 5, 3, 0, 9]));
+			await traceMoeAPIWrapper.downloadVideoFromResult(resultMock, { maxDuration: 0.5 });
+
+			expect(new URL(axiosMockAdapter.history.get[0].url!).search).toContain("maxDuration=0.5");
+		});
+
 		describe("Extensions", () => {
 			test("Pass a destination name with the '.MP4' extension", async () => {
 				await testVideoExtension(".MP4");

@@ -71,7 +71,15 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 
 	async function downloadVideoFromResult(result: SearchResult, options?: MediaDownloadOptions): Promise<string> {
 		const mediaSize = options?.size ?? MediaSize.medium;
-		const mediaURL = `${result.videoURL}?size=${mediaSize}${options?.shouldMute ? "&mute" : ""}`;
+		let mediaURL = `${result.videoURL}?size=${mediaSize}${options?.shouldMute ? "&mute" : ""}`;
+
+		if (options?.minDuration) {
+			mediaURL += `&minDuration=${options.minDuration}`;
+		}
+
+		if (options?.maxDuration) {
+			mediaURL += `&maxDuration=${options.maxDuration}`;
+		}
 
 		return downloadMediaFromURL(mediaURL, result, true, options?.directory, options?.name);
 	}

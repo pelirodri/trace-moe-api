@@ -146,8 +146,12 @@ export interface APILimitsResponse {
 export interface MediaDownloadOptions {
 	/** Size of the preview (image and video). */
 	size?: MediaSize;
-	/** Muting (video). */
+	/** Video muting. */
 	shouldMute?: boolean;
+	/** Minimum duration of the video in seconds between 0.5 and 2.0 (defaults to 0.5). */
+	minDuration?: number;
+	/** Maximum duration of the video in seconds between 0.5 and 5.0 (defaults to 5.0). */
+	maxDuration?: number;
 	/** Destination directory. */
 	directory?: string;
 	/** Destination name (no extension needed). */
