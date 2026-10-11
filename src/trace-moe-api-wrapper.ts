@@ -71,14 +71,14 @@ export function createTraceMoeAPIWrapper(options?: TraceMoeAPIWrapperOptions): T
 
 	async function downloadVideoFromResult(result: SearchResult, options?: MediaDownloadOptions): Promise<string> {
 		const mediaSize = options?.size ?? MediaSize.medium;
-		const mediaURL = `${result.videoURL}&size=${mediaSize}${options?.shouldMute ? "&mute" : ""}`;
+		const mediaURL = `${result.videoURL}?size=${mediaSize}${options?.shouldMute ? "&mute" : ""}`;
 
 		return downloadMediaFromURL(mediaURL, result, true, options?.directory, options?.name);
 	}
 
 	async function downloadImageFromResult(result: SearchResult, options?: MediaDownloadOptions): Promise<string> {
 		const mediaSize = options?.size ?? MediaSize.medium;
-		const mediaURL = `${result.imageURL}&size=${mediaSize}`;
+		const mediaURL = `${result.imageURL}?size=${mediaSize}`;
 
 		return downloadMediaFromURL(mediaURL, result, false, options?.directory, options?.name);
 	}

@@ -1,16 +1,11 @@
 import type { SearchResponse, AnilistInfo, APILimitsResponse } from "../../src";
 import type { RawSearchResponse, RawAnilistInfo, RawAPILimitsResponse } from "../../src/types/raw-types";
 
-const baseMediaURL = "https://media.trace.moe";
+const baseMediaURL = "https://api.trace.moe";
+const mediaFilename = "shfaJjdCPu17Khf1gdzTts4";
 
-const mediaFilename = "%5BLeopard-Raws%5D%20Gochuumon%20wa%20Usagi%20Desu%20ka%202nd%20-%2001%20RAW%20" +
-	"(KBS%201280x720%20x264%20AAC).mp4";
-
-const videoURL = `${baseMediaURL}/video/21034/${mediaFilename}` +
-	"?t=290.625&now=1682020800&token=uiNol9dajDX5mzlqnANJQKPBgY";
-
-const imageURL = `${baseMediaURL}/image/21034/${mediaFilename}.jpg` +
-	"?t=290.625&now=1682020800&token=HyeNAbd2qC9kx2QgTJfMY5fJ7Y";
+const videoURL = `${baseMediaURL}/video/${mediaFilename}`;
+const imageURL = `${baseMediaURL}/image/${mediaFilename}`;
 
 export function buildRawSearchResponseSample(shouldIncludeAnilistInfo = false): RawSearchResponse {
 	let anilist: number | RawAnilistInfo = 21034;
@@ -30,16 +25,22 @@ export function buildRawSearchResponseSample(shouldIncludeAnilistInfo = false): 
 	}
 
 	return {
-		frameCount: 5890247,
+		frameCount: 173362743,
 		error: "",
+		quota: 100,
+		quotaUsed: 0,
 		result: [
 			{
 				anilist,
-				filename: "[Leopard-Raws] Gochuumon wa Usagi Desu ka 2nd - 01 RAW (KBS 1280x720 x264 AAC).mp4",
+				filename: "Gochuumon wa Usagi Desuka2 - 01 (BD 1280x720 x264 AAC).mp4",
 				episode: 1,
-				from: 288.58,
-				to: 292.67,
-				similarity: 0.99,
+				episode_start: 1,
+				episode_end: 1,
+				duration: 1418.0834,
+				from: 272.1886,
+				at: 279.7795,
+				to: 282.6574,
+				similarity: 0.9922267343483719,
 				video: videoURL,
 				image: imageURL
 			}
@@ -65,15 +66,21 @@ export function buildSearchResponseSample(shouldIncludeAnilistInfo = false): Sea
 	}
 
 	return {
-		checkedFramesCount: 5890247,
+		checkedFramesCount: 173362743,
+		totalQuota: 100,
+		remainingQuota: 100,
 		results: [
 			{
 				anilistInfo,
-				filename: "[Leopard-Raws] Gochuumon wa Usagi Desu ka 2nd - 01 RAW (KBS 1280x720 x264 AAC).mp4",
+				filename: "Gochuumon wa Usagi Desuka2 - 01 (BD 1280x720 x264 AAC).mp4",
 				episode: 1,
-				fromTimestamp: 288.58,
-				toTimestamp: 292.67,
-				similarityPercentage: 99,
+				episodeStart: 1,
+				episodeEnd: 1,
+				duration: 1418.0834,
+				fromTimestamp: 272.1886,
+				atTimestamp: 279.7795,
+				toTimestamp: 282.6574,
+				similarityPercentage: 99.223,
 				videoURL: videoURL,
 				imageURL: imageURL
 			}
@@ -88,7 +95,7 @@ export function buildRawAPILimitsResponseSample(apiKey: string | null = null): R
 		concurrency: 1,
 		quota: 1000,
 		quotaUsed: 100
-	}
+	};
 }
 
 export function buildAPILimitsResponseSample(apiKey: string | null = null): APILimitsResponse {

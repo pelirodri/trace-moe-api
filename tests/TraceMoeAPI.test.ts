@@ -263,7 +263,7 @@ describe("Fetch API limits", () => {
 });
 
 describe("Download media previews", () => {
-	const mediaBaseURL = "https://media.trace.moe";
+	const mediaBaseURL = "https://api.trace.moe";
 
 	const destinationDirectory = path.join(__dirname, "media");
 	const destinationName = "test";
@@ -272,8 +272,8 @@ describe("Download media previews", () => {
 	let videoGetMatcher: RegExp;
 
 	beforeAll(() => {
-		imageGetMatcher = new RegExp(`${mediaBaseURL}/image/.+`);
 		videoGetMatcher = new RegExp(`${mediaBaseURL}/video/.+`);
+		imageGetMatcher = new RegExp(`${mediaBaseURL}/image/.+`);
 
 		mockFS({ [destinationDirectory]: {} });
 	});
@@ -301,7 +301,7 @@ describe("Download media previews", () => {
 			expect(response).toBe(destinationPath);
 			expect(fs.existsSync(destinationPath)).toBeTruthy();
 			expect(fs.readFileSync(destinationPath)).toEqual(videoBuffer);
-			expect(axiosMockAdapter.history.get[0].url).toEqual(`${resultMock.videoURL}&size=${mediaSize}`);
+			expect(axiosMockAdapter.history.get[0].url).toEqual(`${resultMock.videoURL}?size=${mediaSize}`);
 		});
 
 		test("Request muted", async () => {
@@ -356,7 +356,7 @@ describe("Download media previews", () => {
 			expect(response).toBe(destinationPath);
 			expect(fs.existsSync(destinationPath)).toBeTruthy();
 			expect(fs.readFileSync(destinationPath)).toEqual(imageBuffer);
-			expect(axiosMockAdapter.history.get[0].url).toEqual(`${resultMock.imageURL}&size=${mediaSize}`);
+			expect(axiosMockAdapter.history.get[0].url).toEqual(`${resultMock.imageURL}?size=${mediaSize}`);
 		});
 
 		describe("Extensions", () => {

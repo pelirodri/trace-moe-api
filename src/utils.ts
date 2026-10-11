@@ -51,7 +51,13 @@ export function buildQueryStringFromSearchOptions(options: SearchOptions, mediaU
 
 export function buildSearchResponseFromRawResponse(rawResponse: RawSearchResponse): SearchResponse {
 	const results: SearchResult[] = rawResponse.result!.map(buildSearchResultFromRawResult);
-	return { checkedFramesCount: rawResponse.frameCount!, results };
+
+	return {
+		checkedFramesCount: rawResponse.frameCount!,
+		totalQuota: rawResponse.quota,
+		remainingQuota: rawResponse.quota - rawResponse.quotaUsed,
+		results
+	};
 }
 
 export function buildSearchResultFromRawResult(rawResult: RawSearchResult): SearchResult {
@@ -60,7 +66,7 @@ export function buildSearchResultFromRawResult(rawResult: RawSearchResult): Sear
 				nativeTitle: (rawResult.anilist as RawAnilistInfo).title?.native ?? undefined,
 				romajiTitle: (rawResult.anilist as RawAnilistInfo).title?.romaji,
 				englishTitle: (rawResult.anilist as RawAnilistInfo).title?.english ?? undefined
-		  }
+			}
 		: undefined;
 
 	const anilistInfo: AnilistInfo = {
@@ -75,7 +81,11 @@ export function buildSearchResultFromRawResult(rawResult: RawSearchResult): Sear
 		anilistInfo: omitBy(anilistInfo, isUndefined) as AnilistInfo,
 		filename: rawResult.filename,
 		episode: rawResult.episode ?? undefined,
+		episodeStart: rawResult.episode_start ?? undefined,
+		episodeEnd: rawResult.episode_end ?? undefined,
+		duration: rawResult.duration,
 		fromTimestamp: rawResult.from,
+		atTimestamp: rawResult.at,
 		toTimestamp: rawResult.to,
 		similarityPercentage: roundNumberToPrecision(rawResult.similarity * 100, 3),
 		videoURL: rawResult.video,

@@ -1,3 +1,5 @@
+import type { Quota, Concurrency, Priority } from "./raw-types";
+
 /** Wrapper for trace.moe API. */
 export interface TraceMoeAPIWrapper {
 	/** Optional API key you can get from https://www.patreon.com/soruly. */
@@ -28,7 +30,7 @@ export interface TraceMoeAPIWrapper {
 	readonly fetchAPILimits: () => Promise<APILimitsResponse>;
 
 	/**
-	 * Saves video preview of the found scene in a result.
+	 * Saves preview video of the found scene in a result.
 	 * @param result - Result obtained from a call to one of the search methods.
 	 * @param options - Media download options.
 	 * @returns Path to saved file.
@@ -36,7 +38,7 @@ export interface TraceMoeAPIWrapper {
 	readonly downloadVideoFromResult: (result: SearchResult, options?: MediaDownloadOptions) => Promise<string>;
 
 	/**
-	 * Saves image preview of the found scene in a result.
+	 * Saves preview image of the found scene in a result.
 	 * @param result - Result obtained from a call to one of the search methods.
 	 * @param options - Media download options.
 	 * @returns Path to saved file.
@@ -66,6 +68,10 @@ export interface SearchOptions {
 export interface SearchResponse {
 	/** How many frames were checked. */
 	readonly checkedFramesCount: number;
+	/** Defaults to 100 requests per month; see https://soruly.github.io/trace.moe-api/#/limits. */
+	readonly totalQuota: Quota;
+	/** Total monthly quota minus used quota. */
+	readonly remainingQuota: number;
 	/** Array with the found results sorted from most similar to least similar. */
 	readonly results: SearchResult[];
 }
@@ -78,15 +84,23 @@ export interface SearchResult {
 	readonly filename: string;
 	/** Episode of the detected scene, if applicable (see https://github.com/soruly/aniep). */
 	readonly episode?: number | string | number[];
-	/** Starting timestamp in seconds of the video preview for the detected scene. */
+	/** Number of the starting episode for the detected scene. */
+	readonly episodeStart?: number;
+	/** Number of the ending episode for the detected scene. */
+	readonly episodeEnd?: number;
+	/** Duration of the preview video in seconds. */
+	readonly duration: number;
+	/** Starting timestamp in seconds of the preview video for the detected scene. */
 	readonly fromTimestamp: number;
-	/** Ending timestamp in seconds of the video preview for the detected scene. */
+	/** Timestamp in seconds of the matching frame in the preview video for the detected scene. */
+	readonly atTimestamp: number;
+	/** Ending timestamp in seconds of the preview video for the detected scene. */
 	readonly toTimestamp: number;
 	/** How similar the detected scene is to the passed media (0–100). */
 	readonly similarityPercentage: number;
-	/** Video preview of the detected scene. */
+	/** Preview video of the detected scene. */
 	readonly videoURL: string;
-	/** Image preview of the detected scene. */
+	/** Preview image of the detected scene. */
 	readonly imageURL: string;
 }
 
@@ -119,11 +133,11 @@ export interface APILimitsResponse {
 	/** Your IP address, when not using an API key. */
 	readonly id: string;
 	/** Defaults to 0; see https://soruly.github.io/trace.moe-api/#/limits. */
-	readonly priority: 0 | 2 | 5 | 6;
+	readonly priority: Priority;
 	/** Defaults to 1 (no parallelism); see https://soruly.github.io/trace.moe-api/#/limits. */
-	readonly concurrency: 1 | 2 | 3 | 4;
-	/** Defaults to 1,000 requests per month; see https://soruly.github.io/trace.moe-api/#/limits. */
-	readonly totalQuota: 1000 | 5000 | 10000 | 20000 | 50000 | 100000;
+	readonly concurrency: Concurrency;
+	/** Defaults to 100 requests per month; see https://soruly.github.io/trace.moe-api/#/limits. */
+	readonly totalQuota: Quota;
 	/** Total monthly quota minus used quota. */
 	readonly remainingQuota: number;
 }
