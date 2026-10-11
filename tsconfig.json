@@ -8,7 +8,10 @@
 		"forceConsistentCasingInFileNames": true,
 		"allowImportingTsExtensions": true,
 		"noEmit": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"paths": {
+			"axios": ["./node_modules/axios/index.d.ts"]
+		}
 	},
 	"include": ["src/**/*.ts"]
 }
