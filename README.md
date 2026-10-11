@@ -44,6 +44,8 @@ interface SearchOptions {
 interface MediaDownloadOptions {
 	size?: MediaSize;
 	shouldMute?: boolean;
+	minDuration?: number;
+	maxDuration?: number;
 	directory?: string;
 	name?: string;
 }
